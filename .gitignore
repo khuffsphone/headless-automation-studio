@@ -1,0 +1,19 @@
+# Archon Monorepo Root — shared ops scripts only
+# archon-workshop and archon-game are standalone git repos — not tracked here.
+
+# ─── Sub-project repos (each is its own git repo) ─────────────────────────────
+archon-workshop/
+archon-game/
+estate_sale_flip_simulator/
+
+# ─── IDE / OS ────────────────────────────────────────────────────────────────
+.idea/
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+
+# ─── Trash / temp ────────────────────────────────────────────────────────────
+trash/
