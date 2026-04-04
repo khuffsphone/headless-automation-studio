@@ -17,3 +17,6 @@ Thumbs.db
 
 # ─── Trash / temp ────────────────────────────────────────────────────────────
 trash/
+gitpush/
+node_modules/
+*.cjs
