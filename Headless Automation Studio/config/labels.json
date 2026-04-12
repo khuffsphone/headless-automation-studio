@@ -1,0 +1,37 @@
+[
+  {
+    "name": "build:codex",
+    "color": "0052CC",
+    "description": "Assign this task to the Codex primary builder agent"
+  },
+  {
+    "name": "build:cursor",
+    "color": "5319E7",
+    "description": "Assign this task to the Cursor primary builder agent"
+  },
+  {
+    "name": "review:ag",
+    "color": "D93F0B",
+    "description": "Request an adversarial review pass from Antigravity"
+  },
+  {
+    "name": "qa:jules",
+    "color": "0E8A16",
+    "description": "Dispatch an async QA and test-hardening pass to Jules"
+  },
+  {
+    "name": "status:ready",
+    "color": "2EA44F",
+    "description": "All automated agent passes complete — ready for human merge decision"
+  },
+  {
+    "name": "status:blocked",
+    "color": "B60205",
+    "description": "Forward progress is blocked — automated dispatch suppressed"
+  },
+  {
+    "name": "status:needs-human",
+    "color": "E4E669",
+    "description": "Automation has reached its limit — human action required"
+  }
+]

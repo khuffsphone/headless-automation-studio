@@ -1,0 +1,44 @@
+{
+  "task_id": "ISSUE-123",
+  "repo": "ORG/REPO",
+  "branch": "feat/ISSUE-123-implement-login-rate-limiting",
+  "objective": "Implement rate limiting on the login endpoint to prevent brute-force attacks. After 5 failed attempts within 60 seconds, the endpoint should return 429 and lock the account for 15 minutes.",
+  "scope": [
+    "Add rate-limiting middleware to the POST /auth/login endpoint",
+    "Return HTTP 429 with a Retry-After header when the limit is exceeded",
+    "Store attempt counts in Redis with a 60-second TTL",
+    "Add an account lock record with a 15-minute TTL on threshold breach"
+  ],
+  "constraints": [
+    "Do not touch unrelated auth endpoints",
+    "Do not modify the User schema or database migrations",
+    "No new npm dependencies unless Redis client is not already available",
+    "Preserve all existing login success and failure response shapes"
+  ],
+  "acceptance_criteria": [
+    "POST /auth/login returns 429 after 5 failed attempts within 60 seconds",
+    "A Retry-After header is present on 429 responses",
+    "Successful logins reset the attempt counter",
+    "Account lock expires automatically after 15 minutes",
+    "All existing auth tests continue to pass",
+    "New integration tests cover the rate-limiting and lock scenarios"
+  ],
+  "files_of_interest": [
+    "src/auth/login.controller.ts",
+    "src/auth/login.service.ts",
+    "src/middleware/rate-limit.middleware.ts",
+    "src/config/redis.ts",
+    "tests/auth/login.integration.test.ts"
+  ],
+  "review_focus": [
+    "edge cases around the 60-second window boundary",
+    "behavior when Redis is unavailable (fail open vs fail closed)",
+    "correctness of the Retry-After header value",
+    "state transitions between normal, rate-limited, and locked states",
+    "potential for counter bypass via timing attacks"
+  ],
+  "artifacts": {
+    "issue_url": "https://github.com/ORG/REPO/issues/123",
+    "pr_url": "https://github.com/ORG/REPO/pull/456"
+  }
+}

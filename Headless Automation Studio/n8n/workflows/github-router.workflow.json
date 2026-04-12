@@ -1,0 +1,170 @@
+{
+  "name": "GitHub Router",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "node-webhook-github",
+      "name": "GitHub Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "PLACEHOLDER_WEBHOOK_ID",
+      "notes": "Receives all GitHub webhook events. Configure the path to match your GitHub webhook settings. See docs/setup/github-webhook-setup.md."
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "body",
+        "rules": {
+          "rules": [
+            {
+              "value1": "={{$json[\"body\"][\"action\"]}}",
+              "operation": "equal",
+              "value2": "labeled",
+              "output": 0
+            },
+            {
+              "value1": "={{$json[\"body\"][\"issue\"] !== undefined}}",
+              "operation": "equal",
+              "value2": "true",
+              "output": 1
+            },
+            {
+              "value1": "={{$json[\"body\"][\"pull_request\"] !== undefined}}",
+              "operation": "equal",
+              "value2": "true",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "id": "node-switch-route",
+      "name": "Route Event",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "notes": "Routes events by type. Extend with additional outputs for review:ag, qa:jules, status changes, etc."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "event_type",
+              "value": "issue_labeled"
+            },
+            {
+              "name": "label",
+              "value": "={{$json[\"body\"][\"label\"][\"name\"]}}"
+            },
+            {
+              "name": "issue_number",
+              "value": "={{$json[\"body\"][\"issue\"][\"number\"]}}"
+            },
+            {
+              "name": "issue_url",
+              "value": "={{$json[\"body\"][\"issue\"][\"html_url\"]}}"
+            },
+            {
+              "name": "repo",
+              "value": "={{$json[\"body\"][\"repository\"][\"full_name\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-set-issue-data",
+      "name": "Extract Issue Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [680, 200],
+      "notes": "Extracts and normalizes issue label event data. Wire downstream to builder dispatch nodes."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "event_type",
+              "value": "pr_labeled"
+            },
+            {
+              "name": "label",
+              "value": "={{$json[\"body\"][\"label\"][\"name\"]}}"
+            },
+            {
+              "name": "pr_number",
+              "value": "={{$json[\"body\"][\"pull_request\"][\"number\"]}}"
+            },
+            {
+              "name": "pr_url",
+              "value": "={{$json[\"body\"][\"pull_request\"][\"html_url\"]}}"
+            },
+            {
+              "name": "branch",
+              "value": "={{$json[\"body\"][\"pull_request\"][\"head\"][\"ref\"]}}"
+            },
+            {
+              "name": "repo",
+              "value": "={{$json[\"body\"][\"repository\"][\"full_name\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-set-pr-data",
+      "name": "Extract PR Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [680, 400],
+      "notes": "Extracts and normalizes PR label event data. Wire downstream to review:ag and qa:jules handlers."
+    }
+  ],
+  "connections": {
+    "GitHub Webhook": {
+      "main": [
+        [
+          {
+            "node": "Route Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Event": {
+      "main": [
+        [
+          {
+            "node": "Extract Issue Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Extract PR Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "PLACEHOLDER_VERSION_ID",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "PLACEHOLDER_INSTANCE_ID"
+  },
+  "id": "PLACEHOLDER_WORKFLOW_ID",
+  "tags": ["agent-workflow", "github-router"]
+}

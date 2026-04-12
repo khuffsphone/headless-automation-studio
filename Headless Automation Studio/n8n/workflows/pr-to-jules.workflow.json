@@ -1,0 +1,254 @@
+{
+  "name": "PR to Jules",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-pr-jules",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "node-webhook-pr-jules",
+      "name": "PR Label Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "PLACEHOLDER_WEBHOOK_ID_JULES",
+      "notes": "Triggered when a PR receives the qa:jules label. In production, this node may be replaced by a connection from the GitHub Router workflow instead of a standalone webhook."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"body\"][\"label\"][\"name\"]}}",
+              "operation": "equal",
+              "value2": "qa:jules"
+            }
+          ]
+        }
+      },
+      "id": "node-if-jules-label",
+      "name": "Is qa:jules Label?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "notes": "Filters events to only proceed when the qa:jules label was applied. Other label events are ignored."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "repo",
+              "value": "={{$json[\"body\"][\"repository\"][\"full_name\"]}}"
+            },
+            {
+              "name": "branch",
+              "value": "={{$json[\"body\"][\"pull_request\"][\"head\"][\"ref\"]}}"
+            },
+            {
+              "name": "pr_url",
+              "value": "={{$json[\"body\"][\"pull_request\"][\"html_url\"]}}"
+            },
+            {
+              "name": "pr_number",
+              "value": "={{$json[\"body\"][\"pull_request\"][\"number\"]}}"
+            },
+            {
+              "name": "prompt",
+              "value": "PLACEHOLDER: Insert the Jules finisher prompt here, with task payload, branch, repo, and Antigravity findings substituted in. See docs/prompts/jules-finisher.md."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-build-jules-payload",
+      "name": "Build Jules Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [680, 240],
+      "notes": "Assembles the payload for the Jules session creation request. Substitute the actual prompt template from docs/prompts/jules-finisher.md."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://PLACEHOLDER_JULES_API_BASE_URL/sessions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "repo",
+              "value": "={{$json[\"repo\"]}}"
+            },
+            {
+              "name": "branch",
+              "value": "={{$json[\"branch\"]}}"
+            },
+            {
+              "name": "prompt",
+              "value": "={{$json[\"prompt\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-create-jules-session",
+      "name": "Create Jules Session",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 240],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PLACEHOLDER_CREDENTIAL_ID",
+          "name": "Jules API Key"
+        }
+      },
+      "notes": "POSTs to the Jules session creation endpoint. Replace PLACEHOLDER_JULES_API_BASE_URL with the real Jules API base URL. Configure the Jules API Key credential in n8n UI."
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "node-wait-poll",
+      "name": "Wait 30s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1120, 240],
+      "notes": "Wait before polling Jules session status. Adjust interval based on expected Jules task duration."
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://PLACEHOLDER_JULES_API_BASE_URL/sessions/' + $node['Create Jules Session'].json['session_id'] }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "node-poll-jules-session",
+      "name": "Poll Jules Session",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 240],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PLACEHOLDER_CREDENTIAL_ID",
+          "name": "Jules API Key"
+        }
+      },
+      "notes": "GETs the Jules session status using the session_id returned by the creation request. Wire the output to an IF node checking if status === 'complete' or 'failed'. Loop back to Wait 30s if still running."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{$json[\"repo\"]}}/issues/{{$json[\"pr_number\"]}}/comments",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "body",
+              "value": "PLACEHOLDER: Insert formatted Jules summary comment here, combining the agent-status block and human-readable report from the Jules session output."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-post-pr-comment",
+      "name": "Post Jules Summary to PR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 240],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PLACEHOLDER_CREDENTIAL_ID",
+          "name": "GitHub API Token"
+        }
+      },
+      "notes": "Posts the Jules completion summary as a PR comment. Uses GitHub Issues Comments API. The body should contain the agent-status block followed by the human-readable report."
+    }
+  ],
+  "connections": {
+    "PR Label Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is qa:jules Label?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is qa:jules Label?": {
+      "main": [
+        [
+          {
+            "node": "Build Jules Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Jules Payload": {
+      "main": [
+        [
+          {
+            "node": "Create Jules Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Jules Session": {
+      "main": [
+        [
+          {
+            "node": "Wait 30s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30s": {
+      "main": [
+        [
+          {
+            "node": "Poll Jules Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poll Jules Session": {
+      "main": [
+        [
+          {
+            "node": "Post Jules Summary to PR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "PLACEHOLDER_VERSION_ID",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "PLACEHOLDER_INSTANCE_ID"
+  },
+  "id": "PLACEHOLDER_WORKFLOW_ID_JULES",
+  "tags": ["agent-workflow", "jules-qa"]
+}

@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:PLACEHOLDER_ORG:schema:task-payload",
+  "title": "AgentTaskPayload",
+  "description": "Structured payload passed to build, review, and QA agents describing a single scoped task.",
+  "type": "object",
+  "required": [
+    "task_id",
+    "repo",
+    "branch",
+    "objective",
+    "scope",
+    "constraints",
+    "acceptance_criteria",
+    "files_of_interest",
+    "review_focus",
+    "artifacts"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Canonical task identifier, typically ISSUE-<number>.",
+      "examples": ["ISSUE-123"]
+    },
+    "repo": {
+      "type": "string",
+      "description": "GitHub repository in ORG/REPO format.",
+      "pattern": "^[\\w.-]+/[\\w.-]+$",
+      "examples": ["ORG/REPO"]
+    },
+    "branch": {
+      "type": "string",
+      "description": "Feature branch name. Should follow feat/ISSUE-<number>-short-name convention.",
+      "examples": ["feat/ISSUE-123-short-name"]
+    },
+    "objective": {
+      "type": "string",
+      "description": "Plain-language description of what must be implemented or fixed.",
+      "examples": ["Implement the requested feature or fix"]
+    },
+    "scope": {
+      "type": "array",
+      "description": "Explicit list of in-scope deliverables.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "examples": [["Thing 1", "Thing 2"]]
+    },
+    "constraints": {
+      "type": "array",
+      "description": "Hard constraints the agent must not violate.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "examples": [["Do not touch unrelated code", "No new dependencies unless justified"]]
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "description": "Testable conditions that must be true for the task to be considered complete.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "examples": [["All tests pass", "Feature works as described", "No visible regression in main flows"]]
+    },
+    "files_of_interest": {
+      "type": "array",
+      "description": "Files the agent should focus on or is expected to modify.",
+      "items": {
+        "type": "string"
+      },
+      "examples": [["src/path/file.ts", "src/path/component.tsx"]]
+    },
+    "review_focus": {
+      "type": "array",
+      "description": "Specific review lenses the scrutinizer and QA agent should apply.",
+      "items": {
+        "type": "string"
+      },
+      "examples": [["edge cases", "state transitions", "UI behavior", "performance"]]
+    },
+    "artifacts": {
+      "type": "object",
+      "description": "Links to key GitHub artifacts associated with this task.",
+      "required": ["issue_url"],
+      "properties": {
+        "issue_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Full URL of the originating GitHub Issue.",
+          "examples": ["https://github.com/ORG/REPO/issues/123"]
+        },
+        "pr_url": {
+          "type": "string",
+          "description": "Full URL of the associated Pull Request. Empty string if not yet opened.",
+          "examples": ["https://github.com/ORG/REPO/pull/456", ""]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
