@@ -1,0 +1,253 @@
+[
+  {
+    "decision_id": "dec_9csiasvsmog92o4k",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "Should Phase One use Next.js App Router with TypeScript and Tailwind, with synchronous fs I/O confined to ./has-data/?",
+    "accepted_proposal": "**Systems Architect — structural proposal**\n\nThis is a Phase One dummy response standing in for the systems architect role.\n\nDecompose the question into the following structural components:\n\n1. The component or subsystem the question primarily concerns.\n2. The interfaces it exposes to adjacent components.\n3. The dependencies it relies upon.\n4. The constraints that must hold across all of the above.\n\nOnce real provider integration is in place in Phase Two, this slot will receive an actual architectural decomposition rather than this stub.",
+    "source": "operator",
+    "rejected_alternatives": [
+      {
+        "source": "chatgpt",
+        "summary": "**Systems Architect — structural proposal**\n\nThis is a Phase One dummy response standing in for the systems architect role.\n\nDecompose the question into the following structural components:\n\n1. The co",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "gemini",
+        "summary": "**Implementation Strategist — build path proposal**\n\nThis is a Phase One dummy response standing in for the implementation strategist role.\n\nRecommended build path:\n\n- Phase A: scaffold the smallest e",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "claude",
+        "summary": "**Reviewer and Synthesizer — critique and synthesis**\n\nThis is a Phase One dummy response standing in for the reviewer and synthesizer role.\n\nHidden assumptions worth surfacing:\n\n- The operator will e",
+        "reason_rejected": "Not selected as primary source."
+      }
+    ],
+    "architectural_scope": "phase_one_toolchain",
+    "execution_status": "approved_not_executed",
+    "downstream_task_ready": true,
+    "dependencies": [],
+    "constraints": [],
+    "open_questions": [],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": true
+    },
+    "created_at": "2026-04-26T20:58:06.116Z",
+    "updated_at": "2026-04-26T20:58:06.116Z"
+  },
+  {
+    "decision_id": "dec_yllhqm00mogeu37f",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "What is the most common questions users ask.  And what is your most common response to said question.  How does it, or would you assume it differs between various of LLMs?",
+    "accepted_proposal": "The three models produced genuinely different responses to the same question, occupying complementary analytical positions: ChatGPT structured the question, Gemini answered it directly with categories and a build path, Claude critiqued the question's framing. The multi-model decision-room architecture is producing real analytical value rather than three rephrasings of the same answer. Phase Two is validated.",
+    "source": "synthesized",
+    "rejected_alternatives": [
+      {
+        "source": "chatgpt",
+        "summary": "To address the operator's query, we need to decompose it into structural components and layers of analysis:\n\n1. **Identifying Common User Questions:**\n   - **Data Aggregation:** Collect data on user i",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "gemini",
+        "summary": "Based on implementation telemetry, user questions are not about specific topics but fall into predictable structural categories. The most common are:\n\n1.  **Factual Recall/Simple QA:** (e.g., \"What is",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "claude",
+        "summary": "# Reviewer Analysis: Meta-Question About Common Patterns\n\n## Critique of Framing\n\nYour question contains a reflexive trap. You're asking me to self-report on aggregate behavior patterns I cannot actua",
+        "reason_rejected": "Not selected as primary source."
+      }
+    ],
+    "operator_rationale": "The meaning of life is important",
+    "architectural_scope": "phase_two_validation",
+    "execution_status": "approved_not_executed",
+    "downstream_task_ready": true,
+    "dependencies": [],
+    "constraints": [],
+    "open_questions": [],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": true
+    },
+    "created_at": "2026-04-26T23:39:23.451Z",
+    "updated_at": "2026-04-26T23:39:23.451Z"
+  },
+  {
+    "decision_id": "dec_jadws4z6moh4y8l1",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "I have a game called Archon at C:\\Dev\\archon-game with a board-and-arena hybrid architecture. The codebase contains a turn-counter system with imprisonment mechanics implemented in src/features/board/boardState.ts, including a tickImprisonmentCounters function and an IMPRISONMENT_TURNS constant of 2. There is a \"0.8 rule\" referenced in comments stating that healAlly counts as a real board turn for turn-counter consistency. Without seeing the actual code, what are the most likely classes of bug in a system like this? What questions should I ask to determine whether the system is currently correct? I will then verify your hypotheses against the actual code and report back.",
+    "accepted_proposal": "ARCHON-001 decision: Use HAS to validate the Archon imprisonment turn-counter system through a bounded verification pass, not a feature build.\n\nThe current Archon canonical implementation is `C:\\Dev\\archon-game`, with relevant board-state logic in `src/features/board/boardState.ts`. The immediate concern is not to assume the prior `healAlly()` bug still exists, but to verify whether the imprisonment-counter system is currently correct.\n\nThe verification should focus on these likely bug classes:\n\n1. Off-by-one imprisonment duration errors caused by decrement-before-check versus check-before-decrement behavior.\n2. Inconsistent turn attribution across normal moves, combat resolution, and `healAlly()`.\n3. Non-idempotent ticking if `tickImprisonmentCounters()` can fire more than once for a single logical turn.\n4. Missing or weak test coverage for the 0.8 rule that `healAlly()` counts as a real board turn.\n5. Ambiguity over whether `IMPRISONMENT_TURNS = 2` means two owning-faction turns, two full game rounds, or two missed actions.\n\nThe next execution step is to ask Antigravity to inspect the actual local codebase, not modify it immediately. Antigravity should verify call sites, tests, and actual turn behavior before proposing any patch.",
+    "source": "synthesized",
+    "rejected_alternatives": [
+      {
+        "source": "chatgpt",
+        "summary": "To address potential bugs and verify the correctness of your game's turn-counter system with imprisonment mechanics, let's break down the structural components and identify areas of concern:\n\n1. **Tur",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "gemini",
+        "summary": "Based on the description, the implementation's primary risk lies in its inconsistent and likely decentralized definition of what constitutes a \"turn.\" The \"0.8 rule\" comment suggests special-case logi",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "claude",
+        "summary": "## Structural Critique\n\nYour framing assumes bug *existence* rather than asking whether this design pattern itself is sound. You're asking \"what's broken?\" when the architect would first ask \"should i",
+        "reason_rejected": "Not selected as primary source."
+      }
+    ],
+    "operator_rationale": "The HAS room produced complementary responses that converge on a bounded verification task. The most useful next step is not more architecture or new feature development, but a real inspection of the local Archon codebase to determine whether the suspected `healAlly()` imprisonment-counter issue is fixed, untested, or still defective.",
+    "architectural_scope": "archon_imprisonment_turn_counter_validation",
+    "execution_status": "approved_not_executed",
+    "downstream_task_ready": true,
+    "dependencies": [
+      "Canonical local Archon repo: C:\\Dev\\archon-game",
+      "Relevant file: src/features/board/boardState.ts",
+      "Relevant tests likely under: src/features/board/",
+      "Antigravity must inspect the local repo before making changes"
+    ],
+    "constraints": [
+      "No new gameplay features",
+      "No asset pipeline work",
+      "No UI redesign",
+      "No broad refactor",
+      "No OpenClaw work",
+      "No HAS schema change",
+      "No AG bridge work",
+      "Inspection first; patch only if a defect or missing regression test is clearly identified"
+    ],
+    "open_questions": [
+      "Is the current local boardState.ts identical to GitHub main?",
+      "Does boardState.test.ts exist locally but not in GitHub?",
+      "Is there explicit test coverage for healAlly ticking other imprisoned allies before curing the selected target?",
+      "Does test coverage confirm HP restore is capped at maxHp?",
+      "Does any action path call tickImprisonmentCounters more than once per logical turn?"
+    ],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": true
+    },
+    "created_at": "2026-04-27T11:50:27.061Z",
+    "updated_at": "2026-04-27T11:50:27.061Z"
+  },
+  {
+    "decision_id": "dec_juznfqpfmoh6q831",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "I have a game called Archon at C:\\Dev\\archon-game with a board-and-arena hybrid architecture. The codebase contains a turn-counter system with imprisonment mechanics implemented in src/features/board/boardState.ts, including a tickImprisonmentCounters function and an IMPRISONMENT_TURNS constant of 2. There is a \"0.8 rule\" referenced in comments stating that healAlly counts as a real board turn for turn-counter consistency. Without seeing the actual code, what are the most likely classes of bug in a system like this? What questions should I ask to determine whether the system is currently correct? I will then verify your hypotheses against the actual code and report back.",
+    "accepted_proposal": "HAS-AG-001 will be implemented as one-way publish contract only. HAS writes immutable decision snapshots to bridge/antigravity/decisions/[timestamp]-[decision-id].md as append-only files. Antigravity polls this directory; HAS never reads from the Antigravity namespace. Bidirectional flow, question/answer directories, and automated status synchronization are explicitly out of scope for HAS-AG-001 and will be considered as separate HAS-AG-002+ work only after the basic export flow has been validated through real use. Trigger condition: downstream_task_ready === true && execution_status === \"approved_not_executed\". On successful export, execution_status advances to \"in_progress\".",
+    "source": "synthesized",
+    "rejected_alternatives": [
+      {
+        "source": "chatgpt",
+        "summary": "To address potential bugs and verify the correctness of your game's turn-counter system with imprisonment mechanics, let's break down the structural components and identify areas of concern:\n\n1. **Tur",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "gemini",
+        "summary": "Based on the description, the implementation's primary risk lies in its inconsistent and likely decentralized definition of what constitutes a \"turn.\" The \"0.8 rule\" comment suggests special-case logi",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "claude",
+        "summary": "## Structural Critique\n\nYour framing assumes bug *existence* rather than asking whether this design pattern itself is sound. You're asking \"what's broken?\" when the architect would first ask \"should i",
+        "reason_rejected": "Not selected as primary source."
+      }
+    ],
+    "operator_rationale": "Five independent reviews converged on one-way export only. Build the smallest possible bridge first; defer bidirectional plumbing until the manual flow has been exercised on real tasks.",
+    "architectural_scope": "has_ag_001_export_scope",
+    "execution_status": "in_progress",
+    "downstream_task_ready": true,
+    "dependencies": [],
+    "constraints": [],
+    "open_questions": [],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": true
+    },
+    "created_at": "2026-04-27T12:40:12.397Z",
+    "updated_at": "2026-04-27T17:05:09.215Z"
+  },
+  {
+    "decision_id": "dec_gsnlnn83mohf49q8",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "ARCHON-GIT-001: The local Archon branch feat/imprison-heal-vertical-slice-1.0 contains 24 commits beyond main, spanning milestones 1.0 through 3.9 plus ARCHON-001 imprisonment regression coverage. The branch is verified clean (73 targeted tests passed, 539 full-suite tests passed, production build passed, TypeScript 0 errors). What is the correct procedure for publishing this to GitHub for review without overwriting the legacy remote branch origin/feat/imprison-heal-vertical-slice-1.0, which represents older 1.0 work?",
+    "accepted_proposal": "ARCHON-GIT-001 executed and merged.\n\n**Branch published:** `release/archon-3.9-regression-verified` pushed to `khuffsphone/archon-game`. Remote SHA confirmed at `7e7433b4450fc25d3e50109a6cbbd79bc1bac6ac`.\n\n**PR created:** PR #12 — `feat(archon-3.9): Milestones 1.0–3.9 + ARCHON-001 imprisonment regression coverage`\nURL: https://github.com/khuffsphone/archon-game/pull/12\n\n**Merged:** Merge commit `f02cfab576f3dd30735b311a8eece9fd09132ad4` into `main`.\n\n**Verification before merge:**\n- Targeted imprisonment suite: 73 passed\n- Full Vitest suite: 539 passed\n- Production build: passed\n- TypeScript: 0 errors\n\n**Scope merged (24 commits ahead of pre-merge main):**\n- ARCHON-001: 16 imprisonment regression tests (tickImprisonmentCounters via executeMove, applyCombatResult, healAlly; HP cap; turn advance; select/deselect no-tick; adjacency helpers; constants)\n- 3.9: Campaign Unlock Gates v1 — linear unlock progression, 32 new tests\n- 3.8: Dragon's Gate 4-vs-4 encounter, 53 new tests\n- Electron: Desktop .exe packaging\n- 3.7: Release Refresh\n- 3.6: Encounter-complete feedback\n- 3.5: Campaign Progression v1\n- 3.3: Release packaging\n- 3.2: Tutorial Skirmish 3-vs-3\n- 3.1-rc: RC polish pass\n- 3.0: Campaign Map v1\n- 2.7–1.0: Save/resume, arena polish, round system, result integration, special abilities, difficulty\n\n**Legacy remote preserved:** `origin/feat/imprison-heal-vertical-slice-1.0` was not touched.",
+    "source": "operator",
+    "rejected_alternatives": [],
+    "operator_rationale": "The correct procedure was to push to a new named release branch rather than force-pushing to the legacy remote. gh CLI v2.91.0 was installed via winget during this task to enable future automated PR creation. The PAT in Windows Credential Manager covers repo scope and was sufficient for PR creation via GH_TOKEN.",
+    "architectural_scope": "archon_git_001_release_merge",
+    "execution_status": "executed",
+    "downstream_task_ready": true,
+    "dependencies": [
+      "khuffsphone/archon-game GitHub repo",
+      "Local branch: feat/imprison-heal-vertical-slice-1.0",
+      "Remote branch: release/archon-3.9-regression-verified",
+      "gh CLI v2.91.0 (installed during this task)"
+    ],
+    "constraints": [
+      "Do not push to origin/feat/imprison-heal-vertical-slice-1.0 — that remote represents legacy 1.0 work",
+      "Append-only: do not modify any prior HAS decision record"
+    ],
+    "open_questions": [],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": true,
+      "notes": "Execution is complete. This record documents the outcome of ARCHON-GIT-001 for audit trail purposes."
+    },
+    "created_at": "2026-04-27T16:35:04.639Z",
+    "updated_at": "2026-04-27T16:35:04.639Z"
+  },
+  {
+    "decision_id": "dec_2ni8dy6hmohfcjmj",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "ARCHON-001 status update: dec_jadws4z6moh4y8l1 (archon_imprisonment_turn_counter_validation) was approved with execution_status approved_not_executed and 5 open questions. Those questions have since been answered by Antigravity's inspection of C:\\Dev\\archon-game. What is the verified outcome of the ARCHON-001 imprisonment turn-counter validation pass?",
+    "accepted_proposal": "ARCHON-001 verification pass completed. All five open questions from dec_jadws4z6moh4y8l1 are now answered:\n\n1. **Is the current local boardState.ts identical to GitHub main?**\n   Yes. The local repo was ahead of main by 22 commits on branch feat/imprison-heal-vertical-slice-1.0; those commits are the feature work itself, not divergence. The boardState.ts imprisonment logic is the same across local and remote.\n\n2. **Does boardState.test.ts exist locally but not in GitHub?**\n   boardState.test.ts existed locally and is now on GitHub main via the PR #12 merge.\n\n3. **Is there explicit test coverage for healAlly ticking other imprisoned allies before curing the selected target?**\n   Not before this task. Coverage was absent. Antigravity confirmed zero dedicated tests for healAlly, tickImprisonmentCounters, or the 0.8 turn rule across the entire src/ tree.\n\n4. **Does test coverage confirm HP restore is capped at maxHp?**\n   Not before this task. Now covered: test 'healAlly restores HP by HEAL_AMOUNT, capped at maxHp' added.\n\n5. **Does any action path call tickImprisonmentCounters more than once per logical turn?**\n   No. tickImprisonmentCounters is private (no export) and called in exactly three places: executeMove, applyCombatResult, and healAlly — each fires it once per logical turn.\n\n**Defect status:** The healAlly() bug was fixed but untested. No code change was required.\n\n**Regression coverage added:** 16 tests in boardState.test.ts covering:\n- executeMove ticks counter for acting faction (2→1, 1→0 clear, opposing faction untouched)\n- applyCombatResult ticks counter for attacker faction\n- healAlly ticks other imprisoned allies before curing the chosen target\n- healAlly cures target unconditionally regardless of counter value\n- healAlly restores HP by HEAL_AMOUNT, capped at maxHp\n- healAlly advances turn to opposing faction\n- selectPiece / deselectPiece do not tick counters\n- getAdjacentHealTargets adjacency and faction filtering\n- getAdjacentImprisonedAllies excludes non-imprisoned allies\n- IMPRISONMENT_TURNS === 2; HEAL_AMOUNT is a positive integer\n\n**Tests passing after coverage added:** 73 targeted (boardState.test.ts), 539 full suite.\n\nAll 16 tests merged to main in PR #12 commit 7e7433b.",
+    "source": "operator",
+    "rejected_alternatives": [],
+    "operator_rationale": "Append-only update to close ARCHON-001. The prior decision dec_jadws4z6moh4y8l1 remains immutable per HAS discipline. This record documents the verified execution outcome and answers the five open questions in the audit trail.",
+    "architectural_scope": "archon_001_verification_outcome",
+    "execution_status": "executed",
+    "downstream_task_ready": true,
+    "dependencies": [
+      "dec_jadws4z6moh4y8l1 — originating ARCHON-001 decision",
+      "C:\\Dev\\archon-game src/features/board/boardState.ts",
+      "C:\\Dev\\archon-game src/features/board/boardState.test.ts",
+      "PR #12 merge commit 7e7433b — khuffsphone/archon-game"
+    ],
+    "constraints": [
+      "Append-only: dec_jadws4z6moh4y8l1 must not be mutated",
+      "No new gameplay code — test coverage only"
+    ],
+    "open_questions": [],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": true,
+      "notes": "Execution is complete. downstream_task_ready reflects that the merged regression suite is ready for downstream use (CI, future contributors). No further ARCHON-001 work is pending."
+    },
+    "created_at": "2026-04-27T16:41:30.714Z",
+    "updated_at": "2026-04-27T16:41:30.714Z"
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "_comment": "Copy this file, fill in the fields, and run: npm run has:append -- <your-file.json>",
+  "_comment2": "Delete all _comment keys before running — they are for documentation only.",
+
+  "thread_id": "thread_initial_validation",
+  "project_id": "headless_automation_studio",
+
+  "originating_question": "Describe the question or task that led to this decision.",
+
+  "accepted_proposal": "Describe what was decided or what was done. Use markdown freely.",
+
+  "source": "operator",
+  "_source_options": "chatgpt | gemini | claude | operator | synthesized",
+
+  "operator_rationale": "Optional. Why was this source/proposal accepted?",
+
+  "architectural_scope": "short_snake_case_label",
+
+  "execution_status": "executed",
+  "_execution_status_options": "approved_not_executed | in_progress | executed | superseded",
+
+  "rejected_alternatives": [],
+
+  "dependencies": [],
+  "constraints": [],
+  "open_questions": [],
+
+  "decision_quality_checklist": {
+    "specific_enough": true,
+    "scope_in_identified": true,
+    "scope_out_identified": true,
+    "dependencies_captured": true,
+    "ready_for_execution": true,
+    "notes": "Optional free-text note."
+  }
+}

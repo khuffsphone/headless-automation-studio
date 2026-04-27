@@ -1,0 +1,18 @@
+{
+  "project_id": "headless_automation_studio",
+  "project_name": "Headless Automation Studio",
+  "description": "Local-first discussion room for coordinating specialization-aware AI responses and capturing structured decisions for downstream execution.",
+  "objectives": [
+    "Reduce coordination overhead across ChatGPT, Gemini, and Claude.",
+    "Produce structured decision records suitable for a future execution bridge.",
+    "Validate the multi-model specialization premise via self-bootstrapping."
+  ],
+  "constraints": [
+    "Local-first: persistent state confined to ./has-data/.",
+    "Single operator, single project, single active thread for v0.1.",
+    "No code execution, no repository modification, no external integrations."
+  ],
+  "settled_decisions": [],
+  "open_questions": [],
+  "last_updated": "2026-04-25T00:00:00-04:00"
+}
