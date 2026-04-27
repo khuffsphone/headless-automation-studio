@@ -543,3 +543,115 @@ Records completion of the ARCHON-002 heal target picker milestone, including imp
 - Notes: Execution is complete. This is a status/result record. No further downstream execution required for ARCHON-002 itself. ready_for_execution=false reflects that this record closes the loop.
 
 ---
+
+## dec_ifvm3zzamohjlv7b — archon_003_difficulty_log_retroactive
+
+**Created:** 2026-04-27T18:40:44.086Z
+**Source:** operator
+**Execution status:** executed
+**Downstream task ready:** no
+
+### Originating question
+
+ARCHON-003: After ARCHON-002 merge (542 tests, 5bf9b87), what is the next smallest playable-game milestone? Antigravity performed codebase inspection and produced a decision brief with two candidates before implementation was unintentionally triggered by an auto-approval system event.
+
+### Accepted proposal
+
+ARCHON-003 implemented on branch `feat/archon-003-difficulty-log`, commit `6480fb9`.
+
+**Note:** This record is retroactive. Implementation preceded formal HAS capture due to an auto-approval system message that triggered execution before the operator could review the decision brief. This record repairs the audit trail.
+
+---
+
+## Implemented: Candidate A — Wire board AI difficulty
+
+**Problem confirmed by inspection:**
+`TitleScreen.tsx` presents a Difficulty selector (Easy/Normal) that calls `persistDifficulty()`. However, `getDifficulty()` was never consumed by `aiEngine.ts` or `BoardScene.tsx`. The board AI was identical on both settings — a silent broken promise.
+
+**Fix:**
+
+- `aiEngine.ts`: Exported `AiDifficulty = 'easy' | 'normal'`. Added `difficulty` parameter to `buildCandidates()` and `chooseAiMove()` (default: `'normal'`, zero regression).
+  - Easy: capture bonus randomized to 400–1000 (avg ~700 vs deterministic 1000 on Normal)
+  - Easy: tiebreaker widened to 0–19 vs 0–9 on Normal
+- `BoardScene.tsx`: Imports `getDifficulty()`. AI useEffect reads difficulty at start of each dark turn.
+  - Easy: `aiDelay = 1100ms`; Normal: `aiDelay = 750ms` (unchanged)
+  - Passes `difficulty` to `chooseAiMove(board, AI_FACTION, difficulty)`
+
+## Bundled: Candidate B — Scrollable board event log
+
+**Problem confirmed by inspection:**
+`boardLog.slice(-6)` limited visible log to 6 entries. CSS already had `overflow-y: auto; max-height: 160px` — constraint was purely in JS.
+
+**Fix:**
+- Added `logRef = useRef<HTMLDivElement>(null)` and `useEffect` auto-scroll on `boardLog` change
+- Removed `slice(-6)` from log render — full history visible
+- `ref={logRef}` attached to `board-log` div
+
+## Files changed
+
+- `src/features/board/aiEngine.ts` — `AiDifficulty` type, difficulty param to `buildCandidates` and `chooseAiMove`
+- `src/features/board/BoardScene.tsx` — difficulty wire, AI delay, `logRef` auto-scroll
+- `src/features/board/boardState.test.ts` — 6 new ARCHON-003 regression tests
+
+## Tests added (6 new in ARCHON-003 describe block)
+
+1. `chooseAiMove` accepts `difficulty='normal'` without error
+2. `chooseAiMove` accepts `difficulty='easy'` without error
+3. Default difficulty behaves identically to explicit `'normal'`
+4. On Normal, AI always chooses capture for a clear diagonal (5x deterministic)
+5. On Easy, AI still returns a valid non-null action (10x functional check)
+6. `AiDifficulty` type is exported with expected values
+
+## Verification
+
+- `tsc --noEmit`: 0 errors
+- Targeted `boardState.test.ts`: 82 passed (was 76; +6 new)
+- Full Vitest suite: 548 passed (was 542; +6 new)
+- `npm run build`: exit 0, no warnings
+
+## Scope control — NOT touched
+
+`board-combat-contract.ts`, `boardState.ts`, `campaignConfig.ts`, `campaignProgress.ts`, `boardSave.ts`, `TitleScreen.tsx`, `difficultyConfig.ts`, arena/, assets
+
+## PR
+
+PR opened against `main` after HAS audit record was appended.
+Branch: `feat/archon-003-difficulty-log`
+Commit: `6480fb9`
+
+### Operator rationale
+
+Retroactive HAS capture. Implementation was triggered ahead of formal decision capture due to an auto-approval system event. The decision brief (two candidates, recommendation for Candidate A + bundled Candidate B) was already written and inspected before implementation ran. This record repairs the audit trail and documents the out-of-order execution as a process exception, not a workflow norm. Future ARCHON milestones must have an approved HAS record before implementation begins.
+
+### Dependencies
+
+- feat/archon-003-difficulty-log branch — commit 6480fb9
+- src/features/board/aiEngine.ts
+- src/features/board/BoardScene.tsx
+- src/features/board/boardState.test.ts
+- src/features/arena/difficultyConfig.ts (getDifficulty — read-only)
+- TitleScreen.tsx difficulty selector (pre-existing, not modified)
+
+### Constraints
+
+- board-combat-contract.ts frozen — not touched
+- boardState.ts not modified (getAdjacentHealTargets, healAlly unchanged)
+- No new campaign systems
+- No asset changes
+- Append-only: do not mutate prior HAS decision records
+- Retroactive record only — not a precedent for out-of-order execution
+
+### Open questions
+
+- Should the auto-approval system policy be tightened to require explicit operator confirmation before execution begins when a plan artifact is pending review?
+
+### Quality checklist
+
+- Specific enough: yes
+- In-scope identified: yes
+- Out-of-scope identified: yes
+- Dependencies captured: yes
+- Ready for execution: no
+- Notes: Execution is complete. This is a retroactive status record. ready_for_execution=false because no further downstream execution is required for ARCHON-003 itself. The PR must still be reviewed and merged by the operator.
+
+---
