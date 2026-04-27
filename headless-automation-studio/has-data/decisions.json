@@ -249,5 +249,82 @@
     },
     "created_at": "2026-04-27T16:41:30.714Z",
     "updated_at": "2026-04-27T16:41:30.714Z"
+  },
+  {
+    "decision_id": "dec_t5oiqefhmohik90u",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "HAS-AG-001 update: one-way Antigravity task export has been implemented and verified. What should the completion record contain?",
+    "accepted_proposal": "HAS-AG-001 is complete.\n\nHeadless Automation Studio now supports one-way Antigravity task export.\n\nImplemented behavior:\n\n- Eligible downstream-ready decisions can be exported from the Decision Log.\n- Export eligibility requires `downstream_task_ready === true` and `execution_status === \"approved_not_executed\"`.\n- Exported task files are written to `has-data/exports/antigravity-tasks/`.\n- Exported task files are immutable timestamped markdown snapshots.\n- Exported markdown includes an execution gate requiring Antigravity to present a plan and wait for operator approval before modifying files, running commands, or taking write actions.\n- After successful export, the decision status changes to `in_progress`.\n- `decisions.md` regenerates after status update.\n- HAS does not read back from Antigravity.\n- No bidirectional bridge was added.\n\nVerification:\n\n- TypeScript check passed.\n- Production build passed.\n- Smoke test exported `dec_juznfqpfmoh6q831`.\n- Exported file created under `has-data/exports/antigravity-tasks/`.\n- `dec_juznfqpfmoh6q831` updated to `in_progress`.\n\nThis closes HAS-AG-001.",
+    "source": "operator",
+    "rejected_alternatives": [],
+    "operator_rationale": "Records completion of the one-way Antigravity export feature and closes the prior HAS-AG-001 in-progress scope record.",
+    "architectural_scope": "has_ag_001_complete",
+    "execution_status": "executed",
+    "downstream_task_ready": false,
+    "dependencies": [
+      "dec_juznfqpfmoh6q831",
+      "has-data/exports/antigravity-tasks/",
+      "src/app/api/decision/[id]/export/route.ts",
+      "src/components/DecisionLog.tsx",
+      "src/lib/storage.ts"
+    ],
+    "constraints": [
+      "Status record only",
+      "No downstream execution",
+      "No bidirectional bridge",
+      "Do not mutate prior decision records"
+    ],
+    "open_questions": [
+      "Should HAS-AG-002 result import be considered after at least one more real exported task?"
+    ],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": false,
+      "notes": "Execution is complete. This is a status/result record only. No further downstream execution is needed for HAS-AG-001 itself. ready_for_execution=false reflects that this record closes the loop rather than opening a new downstream task."
+    },
+    "created_at": "2026-04-27T18:11:29.069Z",
+    "updated_at": "2026-04-27T18:11:29.069Z"
+  },
+  {
+    "decision_id": "dec_ejs4v3ecmohikd82",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "ARCHON-002: The heal target picker has been implemented on branch feat/archon-002-heal-picker and PR #13 has been reviewed and merged into main. What should the completion record contain?",
+    "accepted_proposal": "ARCHON-002 implemented and merged.\n\n**PR #13:** `feat(board): add heal target picker`\nURL: https://github.com/khuffsphone/archon-game/pull/13\n\n**Merge commit:** `5bf9b878f544bdfb794bac1c4e35b1e6264be89f` into `main`.\n\n**Problem solved:**\nPreviously, `BoardScene.tsx` silently used `healTargets[0]` when `getAdjacentHealTargets()` returned multiple eligible adjacent allies. The player had no ability to choose which ally received the heal.\n\n**Implemented behavior:**\n\n- When exactly one adjacent ally is eligible for healing, the existing single-button UX (`btn-heal-ally`) is preserved unchanged.\n- When two or more adjacent allies are eligible, the sidebar renders a target picker with one button per candidate.\n- Each picker button has a unique ID: `btn-heal-target-<pieceId>`.\n- Picker buttons show the target's name, state (imprisoned/wounded), and the action label (Cure Ally / Heal Ally / Cure + Heal).\n- Sort order: imprisoned targets first, then wounded-only, stable tiebreak by pieceId.\n- Clicking any picker button calls `healAlly(board, caster, targetId)` for that specific target.\n- Log format is unchanged from prior implementation.\n- `handleHeal(targetId)` extracted as a shared dispatcher for both paths.\n\n**Scope control:**\n- `boardState.ts` not modified — `getAdjacentHealTargets()` was already correct.\n- `board-combat-contract.ts` not modified.\n- No campaign files changed.\n- No AI engine changes.\n- No assets added.\n- No HAS files changed.\n\n**Regression tests added (3 new tests in `boardState.test.ts`):**\n1. `getAdjacentHealTargets returns all eligible adjacent allies, not just first`\n2. `healAlly can target the second adjacent ally (non-zero index)`\n3. `healAlly can target the imprisoned ally while a wounded ally is also present`\n\n**Verification:**\n- `tsc --noEmit`: 0 errors\n- Targeted `boardState.test.ts`: 76 passed (was 73)\n- Full Vitest suite: 542 passed (was 539)\n- `npm run build`: exit 0, no warnings\n\n**PR review findings:**\n- 1 commit, 3 files changed (169+/11−)\n- No prohibited files touched\n- Single-target path preserved (AC-1 regression confirmed)\n- Multi-target path correct (AC-2 confirmed)\n- All 542 tests verified on PR branch before merge\n\nThis closes ARCHON-002.",
+    "source": "operator",
+    "rejected_alternatives": [],
+    "operator_rationale": "Records completion of the ARCHON-002 heal target picker milestone, including implementation, PR review, and merge. Closes the ARCHON-002 gameplay agency gap identified post-3.9 merge.",
+    "architectural_scope": "archon_002_heal_picker_merge",
+    "execution_status": "executed",
+    "downstream_task_ready": false,
+    "dependencies": [
+      "khuffsphone/archon-game GitHub repo",
+      "PR #13 — feat/archon-002-heal-picker",
+      "Merge commit 5bf9b878f544bdfb794bac1c4e35b1e6264be89f",
+      "src/features/board/BoardScene.tsx",
+      "src/features/board/boardState.test.ts",
+      "src/index.css"
+    ],
+    "constraints": [
+      "No changes to boardState.ts or board-combat-contract.ts",
+      "No new healing mechanics",
+      "No campaign or asset changes",
+      "Append-only: do not mutate prior decision records"
+    ],
+    "open_questions": [],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": false,
+      "notes": "Execution is complete. This is a status/result record. No further downstream execution required for ARCHON-002 itself. ready_for_execution=false reflects that this record closes the loop."
+    },
+    "created_at": "2026-04-27T18:11:34.512Z",
+    "updated_at": "2026-04-27T18:11:34.512Z"
   }
 ]

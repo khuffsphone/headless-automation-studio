@@ -377,3 +377,169 @@ Append-only update to close ARCHON-001. The prior decision dec_jadws4z6moh4y8l1 
 - Notes: Execution is complete. downstream_task_ready reflects that the merged regression suite is ready for downstream use (CI, future contributors). No further ARCHON-001 work is pending.
 
 ---
+
+## dec_t5oiqefhmohik90u — has_ag_001_complete
+
+**Created:** 2026-04-27T18:11:29.069Z
+**Source:** operator
+**Execution status:** executed
+**Downstream task ready:** no
+
+### Originating question
+
+HAS-AG-001 update: one-way Antigravity task export has been implemented and verified. What should the completion record contain?
+
+### Accepted proposal
+
+HAS-AG-001 is complete.
+
+Headless Automation Studio now supports one-way Antigravity task export.
+
+Implemented behavior:
+
+- Eligible downstream-ready decisions can be exported from the Decision Log.
+- Export eligibility requires `downstream_task_ready === true` and `execution_status === "approved_not_executed"`.
+- Exported task files are written to `has-data/exports/antigravity-tasks/`.
+- Exported task files are immutable timestamped markdown snapshots.
+- Exported markdown includes an execution gate requiring Antigravity to present a plan and wait for operator approval before modifying files, running commands, or taking write actions.
+- After successful export, the decision status changes to `in_progress`.
+- `decisions.md` regenerates after status update.
+- HAS does not read back from Antigravity.
+- No bidirectional bridge was added.
+
+Verification:
+
+- TypeScript check passed.
+- Production build passed.
+- Smoke test exported `dec_juznfqpfmoh6q831`.
+- Exported file created under `has-data/exports/antigravity-tasks/`.
+- `dec_juznfqpfmoh6q831` updated to `in_progress`.
+
+This closes HAS-AG-001.
+
+### Operator rationale
+
+Records completion of the one-way Antigravity export feature and closes the prior HAS-AG-001 in-progress scope record.
+
+### Dependencies
+
+- dec_juznfqpfmoh6q831
+- has-data/exports/antigravity-tasks/
+- src/app/api/decision/[id]/export/route.ts
+- src/components/DecisionLog.tsx
+- src/lib/storage.ts
+
+### Constraints
+
+- Status record only
+- No downstream execution
+- No bidirectional bridge
+- Do not mutate prior decision records
+
+### Open questions
+
+- Should HAS-AG-002 result import be considered after at least one more real exported task?
+
+### Quality checklist
+
+- Specific enough: yes
+- In-scope identified: yes
+- Out-of-scope identified: yes
+- Dependencies captured: yes
+- Ready for execution: no
+- Notes: Execution is complete. This is a status/result record only. No further downstream execution is needed for HAS-AG-001 itself. ready_for_execution=false reflects that this record closes the loop rather than opening a new downstream task.
+
+---
+
+## dec_ejs4v3ecmohikd82 — archon_002_heal_picker_merge
+
+**Created:** 2026-04-27T18:11:34.512Z
+**Source:** operator
+**Execution status:** executed
+**Downstream task ready:** no
+
+### Originating question
+
+ARCHON-002: The heal target picker has been implemented on branch feat/archon-002-heal-picker and PR #13 has been reviewed and merged into main. What should the completion record contain?
+
+### Accepted proposal
+
+ARCHON-002 implemented and merged.
+
+**PR #13:** `feat(board): add heal target picker`
+URL: https://github.com/khuffsphone/archon-game/pull/13
+
+**Merge commit:** `5bf9b878f544bdfb794bac1c4e35b1e6264be89f` into `main`.
+
+**Problem solved:**
+Previously, `BoardScene.tsx` silently used `healTargets[0]` when `getAdjacentHealTargets()` returned multiple eligible adjacent allies. The player had no ability to choose which ally received the heal.
+
+**Implemented behavior:**
+
+- When exactly one adjacent ally is eligible for healing, the existing single-button UX (`btn-heal-ally`) is preserved unchanged.
+- When two or more adjacent allies are eligible, the sidebar renders a target picker with one button per candidate.
+- Each picker button has a unique ID: `btn-heal-target-<pieceId>`.
+- Picker buttons show the target's name, state (imprisoned/wounded), and the action label (Cure Ally / Heal Ally / Cure + Heal).
+- Sort order: imprisoned targets first, then wounded-only, stable tiebreak by pieceId.
+- Clicking any picker button calls `healAlly(board, caster, targetId)` for that specific target.
+- Log format is unchanged from prior implementation.
+- `handleHeal(targetId)` extracted as a shared dispatcher for both paths.
+
+**Scope control:**
+- `boardState.ts` not modified — `getAdjacentHealTargets()` was already correct.
+- `board-combat-contract.ts` not modified.
+- No campaign files changed.
+- No AI engine changes.
+- No assets added.
+- No HAS files changed.
+
+**Regression tests added (3 new tests in `boardState.test.ts`):**
+1. `getAdjacentHealTargets returns all eligible adjacent allies, not just first`
+2. `healAlly can target the second adjacent ally (non-zero index)`
+3. `healAlly can target the imprisoned ally while a wounded ally is also present`
+
+**Verification:**
+- `tsc --noEmit`: 0 errors
+- Targeted `boardState.test.ts`: 76 passed (was 73)
+- Full Vitest suite: 542 passed (was 539)
+- `npm run build`: exit 0, no warnings
+
+**PR review findings:**
+- 1 commit, 3 files changed (169+/11−)
+- No prohibited files touched
+- Single-target path preserved (AC-1 regression confirmed)
+- Multi-target path correct (AC-2 confirmed)
+- All 542 tests verified on PR branch before merge
+
+This closes ARCHON-002.
+
+### Operator rationale
+
+Records completion of the ARCHON-002 heal target picker milestone, including implementation, PR review, and merge. Closes the ARCHON-002 gameplay agency gap identified post-3.9 merge.
+
+### Dependencies
+
+- khuffsphone/archon-game GitHub repo
+- PR #13 — feat/archon-002-heal-picker
+- Merge commit 5bf9b878f544bdfb794bac1c4e35b1e6264be89f
+- src/features/board/BoardScene.tsx
+- src/features/board/boardState.test.ts
+- src/index.css
+
+### Constraints
+
+- No changes to boardState.ts or board-combat-contract.ts
+- No new healing mechanics
+- No campaign or asset changes
+- Append-only: do not mutate prior decision records
+
+### Quality checklist
+
+- Specific enough: yes
+- In-scope identified: yes
+- Out-of-scope identified: yes
+- Dependencies captured: yes
+- Ready for execution: no
+- Notes: Execution is complete. This is a status/result record. No further downstream execution required for ARCHON-002 itself. ready_for_execution=false reflects that this record closes the loop.
+
+---
