@@ -655,3 +655,90 @@ Retroactive HAS capture. Implementation was triggered ahead of formal decision c
 - Notes: Execution is complete. This is a retroactive status record. ready_for_execution=false because no further downstream execution is required for ARCHON-003 itself. The PR must still be reviewed and merged by the operator.
 
 ---
+
+## dec_51riv26pmohl1n7t — archon_003_completion
+
+**Created:** 2026-04-27T19:20:59.848Z
+**Source:** operator
+**Execution status:** executed
+**Downstream task ready:** no
+
+### Originating question
+
+ARCHON-003 PR #14 merged to main (27c368f7ff8c47a10b711a8152bb10a98190a5fa). What is the final completion state of ARCHON-003?
+
+### Accepted proposal
+
+ARCHON-003 is complete. PR #14 merged to main on 2026-04-27.
+
+## Merge details
+
+- Branch: `feat/archon-003-difficulty-log`
+- PR: https://github.com/khuffsphone/archon-game/pull/14
+- Merge commit: `27c368f7ff8c47a10b711a8152bb10a98190a5fa`
+- Commits in PR: 3
+  1. `6480fb9` feat(board): ARCHON-003 — initial implementation
+  2. `562f6c1` fix(board): ARCHON-003-FIX — correct Easy AI capture bonus to 0–79
+  3. `4505fc3` fix(board): ARCHON-003-FINAL-FIX — correct Easy AI to 35% capture-miss gate
+
+## What was delivered
+
+### Candidate A — Board AI difficulty wire
+
+- `aiEngine.ts`: Exported `AiDifficulty = 'easy' | 'normal'` and `EASY_CAPTURE_MISS_RATE = 0.35`.
+  Scoring is identical for both difficulties (capture always +1000).
+  On Easy, `chooseAiMove` has a 35% chance to overlook the best capture and take the best
+  non-capture fallback instead. If no fallback exists, capture is returned.
+- `BoardScene.tsx`: Imports `getDifficulty()`. AI useEffect reads difficulty at start of each
+  dark turn. Easy: `aiDelay = 1100ms`; Normal: `aiDelay = 750ms`. Passes `difficulty` to
+  `chooseAiMove(board, AI_FACTION, difficulty)`.
+
+### Candidate B — Scrollable board event log (bundled)
+
+- `BoardScene.tsx`: Added `logRef = useRef<HTMLDivElement>(null)` and `useEffect` auto-scroll.
+  Removed `boardLog.slice(-6)` — full history visible through existing CSS scroll.
+
+## Verification
+
+- `tsc --noEmit`: 0 errors
+- Full Vitest suite: **552 passed** (was 542 at ARCHON-002 baseline; +10 new ARCHON-003 tests)
+- `npm run build`: exit 0, no warnings
+- Local `main` synced to `27c368f`
+- Feature branch `feat/archon-003-difficulty-log` deleted locally
+
+## Process note
+
+This milestone had an out-of-order execution anomaly (documented in retroactive record
+`dec_ifvm3zzamohjlv7b`). Three corrective commits were required before merge:
+1. Initial implementation triggered by auto-approval system event
+2. First fix attempt (capture bonus 0–79) — mathematically insufficient
+3. Final fix (35% miss gate) — correct behavioral mechanism, deterministically tested
+
+This completion record closes ARCHON-003.
+
+### Operator rationale
+
+ARCHON-003 is fully merged and verified. Local main synchronized. HAS audit trail closed with this completion record. The project is ready to select and plan ARCHON-004 through the standard HAS-first workflow.
+
+### Dependencies
+
+- PR #14: https://github.com/khuffsphone/archon-game/pull/14
+- Merge commit: 27c368f7ff8c47a10b711a8152bb10a98190a5fa
+- Retroactive decision: dec_ifvm3zzamohjlv7b
+
+### Constraints
+
+- No new features in this record
+- Append-only — do not mutate prior HAS decision records
+- ARCHON-004 selection must follow HAS-first workflow
+
+### Quality checklist
+
+- Specific enough: yes
+- In-scope identified: yes
+- Out-of-scope identified: yes
+- Dependencies captured: yes
+- Ready for execution: no
+- Notes: Completion record only. No further execution required for ARCHON-003.
+
+---
