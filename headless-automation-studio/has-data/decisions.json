@@ -428,7 +428,7 @@
       }
     ],
     "architectural_scope": "archon_004_playtest_review",
-    "execution_status": "approved_not_executed",
+    "execution_status": "executed",
     "downstream_task_ready": true,
     "dependencies": [],
     "constraints": [],
@@ -441,6 +441,41 @@
       "ready_for_execution": true
     },
     "created_at": "2026-04-27T19:46:14.034Z",
-    "updated_at": "2026-04-27T19:46:14.034Z"
+    "updated_at": "2026-04-27T22:55:02.350Z"
+  },
+  {
+    "decision_id": "dec_zdnq1nqamoho6m8z",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "Three Archon milestones merged in rapid succession:\n\n- PR #12: Archon milestones 1.0–3.9 plus ARCHON-001 imprisonment/heal regression coverage\n- PR #13: ARCHON-002 heal target picker\n- PR #14: ARCHON-003 board AI difficulty wiring plus scrollable board log\n\nThe full Vitest suite is now at 552 passing tests. ARCHON-002 and ARCHON-003 produced good work, but the capture-before-execute workflow was bypassed and later repaired retroactively.\n\nWhat is the correct next move?\n\nConsider whether the next step should be:\n- another bounded playable-game milestone,\n- a non-feature consolidation pass,\n- a playtest/review pass,\n- documentation,\n- CI/regression hardening,\n- local repo cleanup,\n- or something else.\n\nIf another milestone is the right answer, identify the smallest useful one.\n\nRequired output:\n- recommended next move\n- why this is the right next move now\n- whether it is execution-ready or planning-only\n- files or areas likely involved\n- acceptance criteria if applicable\n- out-of-scope items\n- test/build commands if applicable\n- risks or blockers",
+    "accepted_proposal": "## Critique of Framing\n\nYou're asking \"what's next?\" after a velocity spike, but the real question is **whether the system can absorb another feature without structural debt cascading**. The bypass-then-repair pattern in ARCHON-002/003 is a canary: when capture discipline breaks down under momentum, it signals that *something about the workflow is friction-heavy at precisely the wrong moment*.\n\nYou've listed seven categories but haven't surfaced the **hidden cost structure**: three PRs merged \"in rapid succession\" means integration testing happened *after* merge, not before. 552 passing tests is a lagging indicator—it tells you the suite caught up, not whether the suite would have caught interaction bugs between #12, #13, and #14 if run in isolation.\n\n## Anticipated Contributions\n\n**Architect** will likely recommend CI hardening or a consolidation pass focusing on test isolation and PR guardrails.  \n**Strategist** will likely recommend proceeding to the next milestone (possibly end-of-turn state persistence or player action validation) to maintain momentum while the team is \"hot.\"\n\nBoth miss the workflow-level failure mode.\n\n## Synthesized Proposal\n\n**Recommendation**: **Playtest/review pass with workflow repair as a side effect.**\n\n### Why Now\n1. **Velocity created observability debt**: You merged three features but haven't *played the game* end-to-end since milestone 3.9. Playtest will surface integration bugs that 552 unit tests cannot (state machine race conditions, UI flow breaks, difficulty tuning misfires).\n2. **Workflow repair through constraint**: Mandate that playtest must produce a **10-turn recorded session log** with human commentary. This forces the operator to *use* the scrollable board log (ARCHON-003), which naturally surfaces whether the feature set is coherent or brittle.\n3. **Low-risk forcing function**: If playtest reveals nothing, you've validated the merge quality and can proceed to milestones. If it reveals issues, you've caught them before they compound.\n\n### Execution Details\n- **Execution-ready**: Yes. No planning phase needed.\n- **Files involved**: None directly (playtest is black-box). Commentary may reference `board-log.tsx`, `heal-target-picker.tsx`, AI difficulty config.\n- **Acceptance criteria**:\n  - Complete one 10-turn game against AI at each difficulty level (3 games total).\n  - Record one bug or one \"feels wrong\" observation per game, or explicitly note \"no issues found.\"\n  - Operator captures commentary in `docs/playtest-log-YYYY-MM-DD.md`.\n\n### Out of Scope\n- New features.\n- Refactoring unless blocking playtest.\n- CI pipeline changes (save for next milestone).\n\n### Risks\n- **Playtest reveals compounding issues** requiring a consolidation pass anyway (acceptable—better now than after milestone 5).\n\n---\n\n**HANDOFF**: If playtest surfaces zero issues, the next milestone is execution-ready. If it surfaces 2+ issues, escalate to consolidation pass before new features. Capture the session logs as baseline regression artifacts.",
+    "source": "claude",
+    "rejected_alternatives": [
+      {
+        "source": "chatgpt",
+        "summary": "### Recommended Next Move: CI/Regression Hardening\n\n#### Why This is the Right Next Move Now\nGiven the sequence of events—rapid merging of milestones, bypass of the capture-before-execute workflow, an",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "gemini",
+        "summary": "**Recommended next move:** CI/Regression Hardening.\n\n**Why this is the right next move now:** The bypass of the \"capture-before-execute\" workflow is a critical process failure. While retroactively rep",
+        "reason_rejected": "Not selected as primary source."
+      }
+    ],
+    "architectural_scope": "unspecified",
+    "execution_status": "approved_not_executed",
+    "downstream_task_ready": true,
+    "dependencies": [],
+    "constraints": [],
+    "open_questions": [],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": true
+    },
+    "created_at": "2026-04-27T20:48:50.716Z",
+    "updated_at": "2026-04-27T20:48:50.716Z"
   }
 ]
