@@ -24,7 +24,7 @@
       }
     ],
     "architectural_scope": "phase_one_toolchain",
-    "execution_status": "approved_not_executed",
+    "execution_status": "in_progress",
     "downstream_task_ready": true,
     "dependencies": [],
     "constraints": [],
@@ -37,7 +37,7 @@
       "ready_for_execution": true
     },
     "created_at": "2026-04-26T20:58:06.116Z",
-    "updated_at": "2026-04-26T20:58:06.116Z"
+    "updated_at": "2026-04-27T19:47:35.082Z"
   },
   {
     "decision_id": "dec_yllhqm00mogeu37f",
@@ -402,5 +402,45 @@
     },
     "created_at": "2026-04-27T19:20:59.848Z",
     "updated_at": "2026-04-27T19:20:59.848Z"
+  },
+  {
+    "decision_id": "dec_12j2yycemohly3ki",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "Three Archon milestones merged in rapid succession:\n\n- PR #12: Archon milestones 1.0–3.9 plus ARCHON-001 imprisonment/heal regression coverage\n- PR #13: ARCHON-002 heal target picker\n- PR #14: ARCHON-003 board AI difficulty wiring plus scrollable board log\n\nThe full Vitest suite is now at 552 passing tests. ARCHON-002 and ARCHON-003 produced good work, but the capture-before-execute workflow was bypassed and later repaired retroactively.\n\nWhat is the correct next move?\n\nConsider whether the next step should be:\n- another bounded playable-game milestone,\n- a non-feature consolidation pass,\n- a playtest/review pass,\n- documentation,\n- CI/regression hardening,\n- local repo cleanup,\n- or something else.\n\nIf another milestone is the right answer, identify the smallest useful one.\n\nRequired output:\n- recommended next move\n- why this is the right next move now\n- whether it is execution-ready or planning-only\n- files or areas likely involved\n- acceptance criteria if applicable\n- out-of-scope items\n- test/build commands if applicable\n- risks or blockers",
+    "accepted_proposal": "ARCHON-004 selected: Playtest / review pass with workflow repair.\n\nAfter three rapid Archon merges — PR #12 release through 3.9, ARCHON-002 heal target picker, and ARCHON-003 board AI difficulty wiring plus scrollable board log — the next move should not be another feature milestone yet.\n\nThe correct next step is a non-feature playtest/review pass that validates the current merged game experience and produces baseline regression artifacts.\n\nRationale:\n\nThe project now has 552 passing Vitest tests, but those tests do not prove that the full player experience is coherent after the recent merges. ARCHON-002 and ARCHON-003 also bypassed the intended capture-before-execute workflow and had to be repaired retroactively in HAS. Before adding another feature, the project needs one controlled pass that tests the actual game flow, validates recent player-facing changes, and restores the HAS-first operating discipline.\n\nScope:\n\n1. Complete a short recorded/manual playtest pass on Easy difficulty.\n2. Complete a short recorded/manual playtest pass on Normal difficulty.\n3. Exercise the recently merged features:\n   - heal target picker;\n   - Easy/Normal board AI behavior;\n   - scrollable board log;\n   - campaign map / encounter flow;\n   - save/resume if practical.\n4. Produce a markdown playtest log under `docs/`.\n5. Record bugs, friction, “feels wrong” notes, and “no issue found” confirmations.\n6. Recommend whether the next move should be CI hardening, bugfix consolidation, or a new milestone.\n\nAcceptance criteria:\n\n- A playtest log is created.\n- At least one Easy-difficulty session is documented.\n- At least one Normal-difficulty session is documented.\n- Recent merged features are explicitly checked.\n- Observed issues are categorized as bug, UX friction, balance concern, or no issue found.\n- The final section recommends the next move.\n- No gameplay implementation occurs during the review pass unless a blocker prevents the playtest from continuing.\n\nOut of scope:\n\n- No new gameplay features.\n- No CI implementation yet.\n- No broad refactor.\n- No asset pipeline work.\n- No campaign expansion.\n- No HAS integration work.\n- No ARCHON-005 selection.",
+    "source": "synthesized",
+    "rejected_alternatives": [
+      {
+        "source": "chatgpt",
+        "summary": "### Recommended Next Move: CI/Regression Hardening\n\n#### Why This is the Right Next Move Now\nGiven the sequence of events—rapid merging of milestones, bypass of the capture-before-execute workflow, an",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "gemini",
+        "summary": "**Recommended next move:** CI/Regression Hardening.\n\n**Why this is the right next move now:** The bypass of the \"capture-before-execute\" workflow is a critical process failure. While retroactively rep",
+        "reason_rejected": "Not selected as primary source."
+      },
+      {
+        "source": "claude",
+        "summary": "## Critique of Framing\n\nYou're asking \"what's next?\" after a velocity spike, but the real question is **whether the system can absorb another feature without structural debt cascading**. The bypass-th",
+        "reason_rejected": "Not selected as primary source."
+      }
+    ],
+    "architectural_scope": "archon_004_playtest_review",
+    "execution_status": "approved_not_executed",
+    "downstream_task_ready": true,
+    "dependencies": [],
+    "constraints": [],
+    "open_questions": [],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": true
+    },
+    "created_at": "2026-04-27T19:46:14.034Z",
+    "updated_at": "2026-04-27T19:46:14.034Z"
   }
 ]
