@@ -477,5 +477,47 @@
     },
     "created_at": "2026-04-27T20:48:50.716Z",
     "updated_at": "2026-04-27T20:48:50.716Z"
+  },
+  {
+    "decision_id": "dec_glk2elxemohwg5zd",
+    "project_id": "headless_automation_studio",
+    "thread_id": "thread_initial_validation",
+    "originating_question": "ARCHON-004 corrective update: The playtest/review pass was marked executed, but the browser playtest did not actually complete. What corrective status should be recorded?",
+    "accepted_proposal": "ARCHON-004 is partially complete, not fully complete.\n\nThe prior Antigravity run produced a source-code-verified review and confirmed the test suite state, but it did not complete the intended manual/browser gameplay playtest. The original ARCHON-004 decision required a playtest/review pass after three rapid Archon merges. Source inspection is useful supporting evidence, but it does not satisfy the playtest requirement.\n\nWhat was completed:\n\n- Source-code review of current Archon gameplay flow.\n- Verification that the current suite was reported as passing.\n- Review of recent feature surfaces from PR #12, PR #13, and PR #14.\n- A code-verified report was produced.\n\nWhat remains incomplete:\n\n- Actual manual Easy difficulty gameplay session.\n- Actual manual Normal difficulty gameplay session.\n- Human observation of turn flow, AI behavior, board log behavior, heal picker usability, and campaign flow in the browser.\n- Manual notes on bugs, UX friction, balance concerns, or explicit no-issue findings.\n\nCorrective action:\n\nCreate a manual playtest log template and prepare the game for operator-driven manual playtest. Do not mark ARCHON-004 fully complete until the manual playtest log is filled out and reviewed.\n\nThis record qualifies and supersedes the previous executed status of `dec_12j2yycemohly3ki` for purposes of the remaining playtest work.",
+    "source": "operator",
+    "rejected_alternatives": [],
+    "operator_rationale": "The previous ARCHON-004 execution substituted source inspection for actual gameplay. This corrective record preserves the useful review work but restores the original playtest requirement.",
+    "architectural_scope": "archon_004_corrective_partial",
+    "execution_status": "approved_not_executed",
+    "downstream_task_ready": true,
+    "dependencies": [
+      "dec_12j2yycemohly3ki",
+      "C:\\Dev\\archon-game",
+      "C:\\Dev\\headless-automation-studio",
+      "Manual browser playtest"
+    ],
+    "constraints": [
+      "Append-only correction",
+      "Do not mutate prior decision records",
+      "Do not implement gameplay features",
+      "Do not replace manual playtest with source inspection",
+      "Do not start CI hardening",
+      "Do not select ARCHON-005"
+    ],
+    "open_questions": [
+      "What issues, if any, will the manual Easy difficulty session reveal?",
+      "What issues, if any, will the manual Normal difficulty session reveal?",
+      "Should the next move after manual playtest be CI hardening, bugfix consolidation, or a new milestone?"
+    ],
+    "decision_quality_checklist": {
+      "specific_enough": true,
+      "scope_in_identified": true,
+      "scope_out_identified": true,
+      "dependencies_captured": true,
+      "ready_for_execution": true,
+      "notes": "This is a corrective executable record. The remaining work is manual playtest preparation and operator playtest completion."
+    },
+    "created_at": "2026-04-28T00:40:13.128Z",
+    "updated_at": "2026-04-28T00:40:13.128Z"
   }
 ]

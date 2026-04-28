@@ -747,7 +747,7 @@ ARCHON-003 is fully merged and verified. Local main synchronized. HAS audit trai
 
 **Created:** 2026-04-27T19:46:14.034Z
 **Source:** synthesized
-**Execution status:** approved_not_executed
+**Execution status:** executed
 **Downstream task ready:** yes
 
 ### Originating question
@@ -852,5 +852,185 @@ You're asking "what's next?" after a velocity spike, but the real question is **
 - Out-of-scope identified: yes
 - Dependencies captured: yes
 - Ready for execution: yes
+
+---
+
+## dec_zdnq1nqamoho6m8z — unspecified
+
+**Created:** 2026-04-27T20:48:50.716Z
+**Source:** claude
+**Execution status:** approved_not_executed
+**Downstream task ready:** yes
+
+### Originating question
+
+Three Archon milestones merged in rapid succession:
+
+- PR #12: Archon milestones 1.0–3.9 plus ARCHON-001 imprisonment/heal regression coverage
+- PR #13: ARCHON-002 heal target picker
+- PR #14: ARCHON-003 board AI difficulty wiring plus scrollable board log
+
+The full Vitest suite is now at 552 passing tests. ARCHON-002 and ARCHON-003 produced good work, but the capture-before-execute workflow was bypassed and later repaired retroactively.
+
+What is the correct next move?
+
+Consider whether the next step should be:
+- another bounded playable-game milestone,
+- a non-feature consolidation pass,
+- a playtest/review pass,
+- documentation,
+- CI/regression hardening,
+- local repo cleanup,
+- or something else.
+
+If another milestone is the right answer, identify the smallest useful one.
+
+Required output:
+- recommended next move
+- why this is the right next move now
+- whether it is execution-ready or planning-only
+- files or areas likely involved
+- acceptance criteria if applicable
+- out-of-scope items
+- test/build commands if applicable
+- risks or blockers
+
+### Accepted proposal
+
+## Critique of Framing
+
+You're asking "what's next?" after a velocity spike, but the real question is **whether the system can absorb another feature without structural debt cascading**. The bypass-then-repair pattern in ARCHON-002/003 is a canary: when capture discipline breaks down under momentum, it signals that *something about the workflow is friction-heavy at precisely the wrong moment*.
+
+You've listed seven categories but haven't surfaced the **hidden cost structure**: three PRs merged "in rapid succession" means integration testing happened *after* merge, not before. 552 passing tests is a lagging indicator—it tells you the suite caught up, not whether the suite would have caught interaction bugs between #12, #13, and #14 if run in isolation.
+
+## Anticipated Contributions
+
+**Architect** will likely recommend CI hardening or a consolidation pass focusing on test isolation and PR guardrails.  
+**Strategist** will likely recommend proceeding to the next milestone (possibly end-of-turn state persistence or player action validation) to maintain momentum while the team is "hot."
+
+Both miss the workflow-level failure mode.
+
+## Synthesized Proposal
+
+**Recommendation**: **Playtest/review pass with workflow repair as a side effect.**
+
+### Why Now
+1. **Velocity created observability debt**: You merged three features but haven't *played the game* end-to-end since milestone 3.9. Playtest will surface integration bugs that 552 unit tests cannot (state machine race conditions, UI flow breaks, difficulty tuning misfires).
+2. **Workflow repair through constraint**: Mandate that playtest must produce a **10-turn recorded session log** with human commentary. This forces the operator to *use* the scrollable board log (ARCHON-003), which naturally surfaces whether the feature set is coherent or brittle.
+3. **Low-risk forcing function**: If playtest reveals nothing, you've validated the merge quality and can proceed to milestones. If it reveals issues, you've caught them before they compound.
+
+### Execution Details
+- **Execution-ready**: Yes. No planning phase needed.
+- **Files involved**: None directly (playtest is black-box). Commentary may reference `board-log.tsx`, `heal-target-picker.tsx`, AI difficulty config.
+- **Acceptance criteria**:
+  - Complete one 10-turn game against AI at each difficulty level (3 games total).
+  - Record one bug or one "feels wrong" observation per game, or explicitly note "no issues found."
+  - Operator captures commentary in `docs/playtest-log-YYYY-MM-DD.md`.
+
+### Out of Scope
+- New features.
+- Refactoring unless blocking playtest.
+- CI pipeline changes (save for next milestone).
+
+### Risks
+- **Playtest reveals compounding issues** requiring a consolidation pass anyway (acceptable—better now than after milestone 5).
+
+---
+
+**HANDOFF**: If playtest surfaces zero issues, the next milestone is execution-ready. If it surfaces 2+ issues, escalate to consolidation pass before new features. Capture the session logs as baseline regression artifacts.
+
+### Rejected alternatives
+
+- **chatgpt:** ### Recommended Next Move: CI/Regression Hardening
+
+#### Why This is the Right Next Move Now
+Given the sequence of events—rapid merging of milestones, bypass of the capture-before-execute workflow, an
+  - *Rejected because:* Not selected as primary source.
+- **gemini:** **Recommended next move:** CI/Regression Hardening.
+
+**Why this is the right next move now:** The bypass of the "capture-before-execute" workflow is a critical process failure. While retroactively rep
+  - *Rejected because:* Not selected as primary source.
+
+### Quality checklist
+
+- Specific enough: yes
+- In-scope identified: yes
+- Out-of-scope identified: yes
+- Dependencies captured: yes
+- Ready for execution: yes
+
+---
+
+## dec_glk2elxemohwg5zd — archon_004_corrective_partial
+
+**Created:** 2026-04-28T00:40:13.128Z
+**Source:** operator
+**Execution status:** approved_not_executed
+**Downstream task ready:** yes
+
+### Originating question
+
+ARCHON-004 corrective update: The playtest/review pass was marked executed, but the browser playtest did not actually complete. What corrective status should be recorded?
+
+### Accepted proposal
+
+ARCHON-004 is partially complete, not fully complete.
+
+The prior Antigravity run produced a source-code-verified review and confirmed the test suite state, but it did not complete the intended manual/browser gameplay playtest. The original ARCHON-004 decision required a playtest/review pass after three rapid Archon merges. Source inspection is useful supporting evidence, but it does not satisfy the playtest requirement.
+
+What was completed:
+
+- Source-code review of current Archon gameplay flow.
+- Verification that the current suite was reported as passing.
+- Review of recent feature surfaces from PR #12, PR #13, and PR #14.
+- A code-verified report was produced.
+
+What remains incomplete:
+
+- Actual manual Easy difficulty gameplay session.
+- Actual manual Normal difficulty gameplay session.
+- Human observation of turn flow, AI behavior, board log behavior, heal picker usability, and campaign flow in the browser.
+- Manual notes on bugs, UX friction, balance concerns, or explicit no-issue findings.
+
+Corrective action:
+
+Create a manual playtest log template and prepare the game for operator-driven manual playtest. Do not mark ARCHON-004 fully complete until the manual playtest log is filled out and reviewed.
+
+This record qualifies and supersedes the previous executed status of `dec_12j2yycemohly3ki` for purposes of the remaining playtest work.
+
+### Operator rationale
+
+The previous ARCHON-004 execution substituted source inspection for actual gameplay. This corrective record preserves the useful review work but restores the original playtest requirement.
+
+### Dependencies
+
+- dec_12j2yycemohly3ki
+- C:\Dev\archon-game
+- C:\Dev\headless-automation-studio
+- Manual browser playtest
+
+### Constraints
+
+- Append-only correction
+- Do not mutate prior decision records
+- Do not implement gameplay features
+- Do not replace manual playtest with source inspection
+- Do not start CI hardening
+- Do not select ARCHON-005
+
+### Open questions
+
+- What issues, if any, will the manual Easy difficulty session reveal?
+- What issues, if any, will the manual Normal difficulty session reveal?
+- Should the next move after manual playtest be CI hardening, bugfix consolidation, or a new milestone?
+
+### Quality checklist
+
+- Specific enough: yes
+- In-scope identified: yes
+- Out-of-scope identified: yes
+- Dependencies captured: yes
+- Ready for execution: yes
+- Notes: This is a corrective executable record. The remaining work is manual playtest preparation and operator playtest completion.
 
 ---
