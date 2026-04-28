@@ -20,6 +20,7 @@ import {
   updateThreadActivity,
 } from "@/lib/storage";
 import { callChatGPT, callGemini, callClaude } from "@/lib/providers";
+import { lintQuestion } from "@/lib/questionLinter";
 import type {
   Message,
   MessageRole,
@@ -99,6 +100,23 @@ export async function POST(request: Request): Promise<Response> {
         message: "Field `question` is required and must be non-empty.",
       },
       { status: 400 },
+    );
+  }
+
+  // HAS-007: Pre-debate input lint gate.
+  // Runs before thread resolution, message persistence, and provider dispatch.
+  // A lint failure returns 422 and writes nothing to messages.json.
+  const lintResult = lintQuestion(question);
+  if (!lintResult.valid) {
+    return NextResponse.json(
+      {
+        error: "prompt_lint_failed",
+        message: `Prompt blocked by input lint (${lintResult.errors.length} issue${
+          lintResult.errors.length === 1 ? "" : "s"
+        }): ${lintResult.errors.map((e) => e.rule_id).join(", ")}`,
+        lint_errors: lintResult.errors,
+      },
+      { status: 422 },
     );
   }
 

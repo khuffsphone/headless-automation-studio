@@ -111,7 +111,24 @@ export default function Page() {
         body: JSON.stringify({ question }),
       });
       if (!res.ok) {
-        const errBody = await res.json().catch(() => ({}));
+        const errBody = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          message?: string;
+          lint_errors?: Array<{ rule_id: string; message: string; recommended_fix: string }>;
+        };
+        // HAS-007: surface server-side lint errors with per-rule detail.
+        // (Client-side lint normally catches these first; this path is reached
+        // only by API callers that bypass the UI.)
+        if (
+          errBody?.error === "prompt_lint_failed" &&
+          Array.isArray(errBody?.lint_errors) &&
+          errBody.lint_errors.length > 0
+        ) {
+          const detail = errBody.lint_errors
+            .map((e) => `[${e.rule_id}] ${e.message}`)
+            .join("\n");
+          throw new Error(`Prompt blocked by input lint:\n${detail}`);
+        }
         throw new Error(errBody?.message ?? `HTTP ${res.status}`);
       }
       const data = (await res.json()) as AskResponse;
