@@ -153,44 +153,50 @@ function matchesText(item: FreezeListItem, text: string): MatchResult {
 // Acknowledgment check
 // ---------------------------------------------------------------------------
 //
-// A valid acknowledgment must contain BOTH:
-//   1. Explicit override/acknowledgment language (one of the phrases below)
-//   2. The protected item's id OR label, within 200 chars of the language match
+// A valid acknowledgment must contain an explicit phrase that binds the
+// override language DIRECTLY to this specific item's id or label.
 //
-// Checking a bare item id without override language is NOT sufficient.
+// Valid for "has-decision-schema":
+//   "freeze-list override approved for has-decision-schema"
+//   "protected contract change approved for HAS decision schema"
+//   "explicit freeze-list acknowledgment: has-decision-schema"
+//
+// Invalid:
+//   "freeze-list override approved for workshop-export-contract"  ← wrong item
+//   "has-decision-schema" alone                                    ← no override language
+//   "freeze-list override approved" with no item name             ← no binding
+//   item id near an override phrase targeting a different item    ← no structural binding
+//
+// Implementation: build compound regexes per item so the item id/label must
+// appear AS PART OF the override phrase, not merely nearby.
 
-const ACKNOWLEDGMENT_PHRASES = [
-  /freeze[\s-]list\s+override\s+approved\s+for/i,
-  /freeze[\s-]list\s+override/i,
-  /protected\s+contract\s+change\s+approved\s+for/i,
-  /protected\s+contract\s+change\s+approved/i,
-  /explicit\s+freeze[\s-]list\s+acknowledgment[:\s]/i,
-  /freeze[\s-]list\s+acknowledged/i,
-  /override\s+approved\s+for/i,
-];
+function buildAcknowledgmentPatterns(item: FreezeListItem): RegExp[] {
+  const id = escapeRegex(item.id);
+  const label = escapeRegex(item.label);
+  const itemRef = `(?:${id}|${label})`;
+
+  return [
+    // "freeze-list override approved for <item>"
+    new RegExp(`freeze[\\s\\-]list\\s+override\\s+approved\\s+for\\s+${itemRef}`, "i"),
+    // "protected contract change approved for <item>"
+    new RegExp(`protected\\s+contract\\s+change\\s+approved\\s+for\\s+${itemRef}`, "i"),
+    // "explicit freeze-list acknowledgment: <item>"
+    new RegExp(`explicit\\s+freeze[\\s\\-]list\\s+acknowledgment[:\\s]+${itemRef}`, "i"),
+    // "freeze-list acknowledged for <item>"
+    new RegExp(`freeze[\\s\\-]list\\s+acknowledged\\s+for\\s+${itemRef}`, "i"),
+    // "override approved for <item>"
+    new RegExp(`override\\s+approved\\s+for\\s+${itemRef}`, "i"),
+    // "<item>: freeze-list override" or "<item> freeze-list override"
+    new RegExp(`${itemRef}[:\\s]+freeze[\\s\\-]list\\s+override`, "i"),
+  ];
+}
 
 function isAcknowledged(
   item: FreezeListItem,
   ...texts: (string | undefined)[]
 ): boolean {
   const combined = texts.filter(Boolean).join("\n\n");
-
-  for (const phrase of ACKNOWLEDGMENT_PHRASES) {
-    const match = phrase.exec(combined);
-    if (match === null) continue;
-
-    // Extract a ±200-char window around the match to check for proximity
-    const windowStart = Math.max(0, match.index - 200);
-    const windowEnd = match.index + match[0].length + 200;
-    const window = combined.slice(windowStart, windowEnd);
-
-    const hasId = new RegExp(`\\b${escapeRegex(item.id)}\\b`, "i").test(window);
-    const hasLabel = window.toLowerCase().includes(item.label.toLowerCase());
-
-    if (hasId || hasLabel) return true;
-  }
-
-  return false;
+  return buildAcknowledgmentPatterns(item).some((p) => p.test(combined));
 }
 
 // ---------------------------------------------------------------------------

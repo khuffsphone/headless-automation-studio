@@ -107,20 +107,49 @@ console.log('\n── Test 3: Reference by pattern segment → blocked ───
 // ---------------------------------------------------------------------------
 console.log('\n── Test 4: Override language + wrong item id → still blocked ─────────');
 {
-  // The proposal references has-decision-schema but the override language only
-  // mentions workshop-export-contract, which is more than 200 chars away from
-  // the reference to has-decision-schema.
-  const filler = 'x'.repeat(210);
+  // Override phrase directly names workshop-export-contract, not has-decision-schema.
+  // Must remain blocked for has-decision-schema.
   const result = checkProposalAgainstFreezeList(
-    `This task modifies has-decision-schema.${filler}freeze-list override approved for workshop-export-contract.`,
+    'This task modifies has-decision-schema. Note: freeze-list override approved for workshop-export-contract.',
     undefined,
     realFreezeList,
   );
-  assert(!result.ok, 'ok=false: override language references wrong item id');
+  assert(!result.ok, 'ok=false: override names a different item than the referenced one');
   if (!result.ok) {
     const hit = result.blocking_hits.find(h => h.item_id === 'has-decision-schema');
     assert(hit !== undefined, 'has-decision-schema is in blocking_hits');
-    assert(hit ? !hit.acknowledged : true, 'has-decision-schema is not acknowledged');
+    assert(hit ? !hit.acknowledged : true, 'has-decision-schema is not acknowledged (wrong item in override)');
+  }
+}
+
+console.log('\n── Test 4b: Direct override for correct item → ok, acknowledged ─────');
+{
+  // Override phrase directly names has-decision-schema → should acknowledge it.
+  const result = checkProposalAgainstFreezeList(
+    'This task modifies has-decision-schema. freeze-list override approved for has-decision-schema.',
+    undefined,
+    realFreezeList,
+  );
+  assert(result.ok, 'ok=true when override phrase directly names has-decision-schema');
+  if (result.ok) {
+    const hit = result.hits.find(h => h.item_id === 'has-decision-schema');
+    assert(hit?.acknowledged === true, 'has-decision-schema is acknowledged');
+  }
+}
+
+console.log('\n── Test 4c: Generic override with no item binding → blocked ──────────');
+{
+  // Override phrase present but no item name — must not acknowledge anything.
+  const result = checkProposalAgainstFreezeList(
+    'We need to update src/types/schema.ts. freeze-list override approved.',
+    undefined,
+    realFreezeList,
+  );
+  assert(!result.ok, 'ok=false: generic override with no item binding does not acknowledge');
+  if (!result.ok) {
+    const hit = result.blocking_hits.find(h => h.item_id === 'has-decision-schema');
+    assert(hit !== undefined, 'has-decision-schema is in blocking_hits');
+    assert(hit ? !hit.acknowledged : true, 'has-decision-schema not acknowledged by generic phrase');
   }
 }
 
