@@ -965,7 +965,7 @@ Given the sequence of events—rapid merging of milestones, bypass of the captur
 
 **Created:** 2026-04-28T00:40:13.128Z
 **Source:** operator
-**Execution status:** approved_not_executed
+**Execution status:** executed
 **Downstream task ready:** yes
 
 ### Originating question
@@ -1032,5 +1032,113 @@ The previous ARCHON-004 execution substituted source inspection for actual gamep
 - Dependencies captured: yes
 - Ready for execution: yes
 - Notes: This is a corrective executable record. The remaining work is manual playtest preparation and operator playtest completion.
+
+---
+
+## dec_x2iug8semoikiug6 — archon_005_ci_hardening
+
+**Created:** 2026-04-28T11:54:08.934Z
+**Source:** chatgpt
+**Execution status:** approved_not_executed
+**Downstream task ready:** yes
+
+### Originating question
+
+ARCHON-005 selection: ARCHON-004 manual playtest is complete. The playtest found no bugs, confirmed Easy and Normal difficulty behavior, confirmed scrollable board log behavior, and recommended CI/regression hardening as the next protective step before any new gameplay features.
+
+Should ARCHON-005 be CI/regression hardening? If yes, define the smallest useful CI baseline. If not, recommend the better next step.
+
+Required output:
+- recommended next move
+- why this is the right move now
+- whether it is execution-ready or planning-only
+- files likely involved
+- acceptance criteria
+- out-of-scope items
+- commands to run
+- risks or blockers
+
+### Accepted proposal
+
+ARCHON-005 selected: CI/regression hardening — broad baseline (unit + integration + CI pipeline).
+
+**Recommended next move:** CI/regression hardening.
+
+**Why this is the right move now:**
+The manual playtest validated a stable baseline with no bugs. The absence of bugs indicates game logic integrity. Both Easy and Normal difficulty behaviors are confirmed. The scrollable board log UI component is verified. CI/regression hardening now serves as a defensive measure to preserve this stable state and facilitate future feature development without regression.
+
+**Execution-ready:** Yes. No blockers exist. Stable baseline is confirmed.
+
+**Files likely involved:**
+- `.github/workflows/ci.yml` (new) — GitHub Actions CI pipeline definition
+- `package.json` — add/verify test script entry
+- Existing Vitest test files in `src/features/board/` and `src/features/arena/__tests__/` (552 tests already passing)
+- No new game source files required for the CI gate itself
+
+**Acceptance criteria:**
+1. A GitHub Actions workflow file exists at `.github/workflows/ci.yml`.
+2. The workflow triggers on push and pull_request to main.
+3. The workflow runs `npx vitest run` and exits non-zero on any test failure.
+4. The workflow runs `npm run build` (tsc + vite build) and exits non-zero on any TypeScript or build error.
+5. All 552 existing tests pass in CI on the first run.
+6. A badge or status check is visible on the repository.
+
+**Out-of-scope:**
+- No new gameplay features.
+- No new test cases beyond what CI needs to run existing suite.
+- No broad test refactor.
+- No E2E or browser automation tests.
+- No coverage thresholds (deferred).
+- No deployment pipeline (deferred).
+- No ARCHON-006 selection.
+
+**Commands to run (in archon-game):**
+```
+npx vitest run          # verify local baseline before adding CI
+npm run build           # verify build clean
+git add .github/workflows/ci.yml
+git commit -m "ci: ARCHON-005 — add GitHub Actions CI baseline"
+git push origin main
+```
+
+**Risks or blockers:**
+- The existing 552-test Vitest suite is fast (~1.5s locally) and should run cleanly in a Node CI environment without browser dependencies.
+- Potential risk: GitHub Actions runner environment may require Node version pinning — mitigate by specifying `node-version: '20'` in the workflow.
+- No other known blockers.
+
+### Operator rationale
+
+ChatGPT's broad CI baseline was selected over Gemini's single-test approach and Claude's tiered approach. The existing 552-test Vitest suite already covers unit and integration behavior across all game features. The CI task is therefore minimal: wire the existing suite into GitHub Actions on push/PR. No new tests need to be written. This is the lowest-risk, highest-value protective step before any new gameplay milestone.
+
+### Dependencies
+
+- dec_12j2yycemohly3ki (ARCHON-004 playtest — complete)
+- dec_glk2elxemohwg5zd (ARCHON-004 corrective — executed)
+- archon-game main @ 2791bcd
+- GitHub Actions (external)
+
+### Constraints
+
+- Do not implement new gameplay features
+- Do not write new test cases beyond what CI needs
+- Do not add coverage thresholds in this milestone
+- Do not add deployment pipeline in this milestone
+- Do not select ARCHON-006 during this task
+- Append-only HAS records — do not mutate prior decisions
+
+### Open questions
+
+- Does the GitHub Actions runner need a specific Node version pinned to match local (check .nvmrc or engines field in package.json)?
+- Should the CI workflow also run npm run build, or just the test suite?
+- Should the workflow gate on PRs only, or also on direct pushes to main?
+
+### Quality checklist
+
+- Specific enough: yes
+- In-scope identified: yes
+- Out-of-scope identified: yes
+- Dependencies captured: yes
+- Ready for execution: yes
+- Notes: The existing 552-test Vitest suite is the CI payload. The only new artifact is .github/workflows/ci.yml. Execution is a single file addition.
 
 ---
