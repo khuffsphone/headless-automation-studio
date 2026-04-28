@@ -16,7 +16,7 @@
 | `src/lib/storage.ts` | **MODIFIED** | Imports freeze list, re-exports error classes, wires check into `writeAgBridgeFile`, injects section into export markdown |
 | `src/app/api/decision/[id]/export/route.ts` | **MODIFIED** | Catches `FreezeListConfigError` and `FreezeListError` → 422 |
 | `src/components/DecisionLog.tsx` | **MODIFIED** | Renders freeze-list hits and config errors inline |
-| `scripts/smoke-test-has-008.mjs` | **NEW** | 30-assertion smoke test |
+| `scripts/smoke-test-has-008.mjs` | **NEW** | 35-assertion smoke test |
 | `docs/walkthrough-has-008.md` | **NEW** | This document |
 
 **Not modified:** `src/types/schema.ts` (all freeze-list types live in `freezeList.ts`)
@@ -82,19 +82,24 @@ Because the proposal is **free text** (not a filesystem path), matching works in
 
 ### Acknowledgment check
 
-A valid acknowledgment requires **both** in the same text (proposal or rationale):
-1. **Override language** — one of:
-   - `"freeze-list override approved for"`
-   - `"freeze-list override"`
-   - `"protected contract change approved for"`
-   - `"explicit freeze-list acknowledgment:"`
-   - `"freeze-list acknowledged"`
-   - `"override approved for"`
-2. **Item id or label** — within ±200 characters of the override language match
+A valid acknowledgment requires an explicit phrase that **directly names** the specific item id or label. The item name must appear **as part of** the override phrase — not just nearby.
 
-A bare item id without override language is **not** a valid acknowledgment.
+`buildAcknowledgmentPatterns(item)` generates 6 compound regexes per item:
 
-Override language targeting a different item id (outside the 200-char window) is **not** a valid acknowledgment for the referenced item.
+| Pattern | Example (for `has-decision-schema`) |
+|---|---|
+| `freeze-list override approved for <item>` | `"freeze-list override approved for has-decision-schema"` |
+| `protected contract change approved for <item>` | `"protected contract change approved for HAS decision schema"` |
+| `explicit freeze-list acknowledgment: <item>` | `"explicit freeze-list acknowledgment: has-decision-schema"` |
+| `freeze-list acknowledged for <item>` | `"freeze-list acknowledged for has-decision-schema"` |
+| `override approved for <item>` | `"override approved for has-decision-schema"` |
+| `<item>: freeze-list override` | `"has-decision-schema: freeze-list override"` |
+
+**Invalid — these do NOT acknowledge `has-decision-schema`:**
+- `"freeze-list override approved for workshop-export-contract"` — wrong item named
+- `"has-decision-schema"` alone — no override language
+- `"freeze-list override approved"` with no item name — no binding
+- item id appearing near (but not inside) an override phrase for a different item
 
 ### Gate order in `writeAgBridgeFile`
 
@@ -168,28 +173,30 @@ This task modifies src/types/schema.ts to add an optional field.
 ```powershell
 npx tsc --noEmit                                                   # 0 errors
 npm run build                                                       # ✓ clean
-node --experimental-strip-types scripts/smoke-test-has-008.mjs     # 30/30
+node --experimental-strip-types scripts/smoke-test-has-008.mjs     # 35/35
 ```
 
 ---
 
-## Smoke Test Results (30/30)
+## Smoke Test Results (35/35)
 
 ```
-Test 1:  Reference by id → blocked                       ✅ 3 assertions
-Test 2:  Reference by label → blocked                    ✅ 2 assertions
-Test 3:  Reference by pattern segment → blocked          ✅ 2 assertions
-Test 4:  Override language + wrong item → still blocked  ✅ 3 assertions
-Test 5:  Valid acknowledgment in proposal → ok           ✅ 3 assertions
-Test 6:  Valid acknowledgment in rationale → ok          ✅ 2 assertions
-Test 7:  No frozen references → ok, empty hits           ✅ 2 assertions
-Test 8:  Missing freeze-list.json → null (non-fatal)     ✅ 1 assertion
-Test 9:  Malformed JSON → FreezeListConfigError          ✅ 3 assertions
-Test 10: globToRegex pattern conversion                  ✅ 4 assertions
-Test 11: API 422 on non-compliant eligible decision      ✅ 1 assertion
-Test 12: No file written on API failure                  ✅ 1 assertion
-Test 13: Already-executed → 422 not_eligible             ✅ 2 assertions
-                                              Total:     30 passed, 0 failed
+Test 1:   Reference by id → blocked                             ✅ 3 assertions
+Test 2:   Reference by label → blocked                          ✅ 2 assertions
+Test 3:   Reference by pattern segment → blocked                ✅ 2 assertions
+Test 4:   Override names wrong item → still blocked             ✅ 3 assertions
+Test 4b:  Direct override for correct item → ok, acknowledged   ✅ 2 assertions
+Test 4c:  Generic override (no item binding) → blocked          ✅ 3 assertions
+Test 5:   Valid acknowledgment in proposal → ok                 ✅ 3 assertions
+Test 6:   Valid acknowledgment in rationale → ok                ✅ 2 assertions
+Test 7:   No frozen references → ok, empty hits                 ✅ 2 assertions
+Test 8:   Missing freeze-list.json → null (non-fatal)           ✅ 1 assertion
+Test 9:   Malformed JSON → FreezeListConfigError                ✅ 3 assertions
+Test 10:  globToRegex pattern conversion                        ✅ 4 assertions
+Test 11:  API 422 on non-compliant eligible decision            ✅ 1 assertion
+Test 12:  No file written on API failure                        ✅ 1 assertion
+Test 13:  Already-executed → 422 not_eligible                   ✅ 2 assertions
+                                               Total:           35 passed, 0 failed
 ```
 
 ---
@@ -198,13 +205,11 @@ Test 13: Already-executed → 422 not_eligible             ✅ 2 assertions
 
 1. **Text-based matching, not AST/path matching** — The checker scans free-text proposals, not actual file paths. A proposal that describes a change without naming the path or id may not be caught. Operators should use the protected item ids in their proposals.
 
-2. **200-char proximity window is heuristic** — A very long description between the override phrase and the item id could exceed the window. Operators should keep acknowledgment language close to the item reference.
+2. **No freeze-list entry points in the UI** — Operators must edit `has-data/freeze-list.json` directly to add new protected items. A future HAS task could add a management UI.
 
-3. **No freeze-list entry points in the UI** — Operators must edit `has-data/freeze-list.json` directly to add new protected items. A future HAS task could add a management UI.
+3. **One config path** — `loadFreezeList()` uses `process.cwd()` to resolve the path. In non-standard working directory contexts the path may differ. The same pattern is used throughout `storage.ts` so this is consistent.
 
-4. **One config path** — `loadFreezeList()` uses `process.cwd()` to resolve the path. In non-standard working directory contexts the path may differ. The same pattern is used throughout `storage.ts` so this is consistent.
-
-5. **No test for `freeze_list_blocked` API path with a fully compliant decision** — The smoke test uses direct function calls to cover the blocking logic. Testing the full API path would require a brief-enforcer-passing eligible decision, which none of the current decisions satisfy.
+4. **No test for `freeze_list_blocked` API path with a fully compliant decision** — The smoke test uses direct function calls to cover the blocking logic. Testing the full API path would require a brief-enforcer-passing eligible decision, which none of the current decisions satisfy.
 
 ---
 
