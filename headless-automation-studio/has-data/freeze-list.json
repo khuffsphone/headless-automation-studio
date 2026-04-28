@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "protected_items": [
+    {
+      "id": "archon-game-consumer-contract",
+      "label": "Archon game consumer contract",
+      "type": "path",
+      "patterns": [
+        "archon-game/src/contracts/**",
+        "archon-game/docs/mcp-phase2-design.md"
+      ],
+      "reason": "Consumer/export contract should not be changed by workshop or HAS tasks without explicit approval.",
+      "requires_explicit_acknowledgment": true
+    },
+    {
+      "id": "workshop-export-contract",
+      "label": "Workshop export contract",
+      "type": "path",
+      "patterns": [
+        "archon-workshop/**/export*",
+        "archon-workshop/**/manifest*"
+      ],
+      "reason": "Export format changes can break downstream game ingestion.",
+      "requires_explicit_acknowledgment": true
+    },
+    {
+      "id": "has-decision-schema",
+      "label": "HAS decision schema",
+      "type": "path",
+      "patterns": [
+        "src/types/schema.ts"
+      ],
+      "reason": "Decision schema changes can invalidate stored local decisions.",
+      "requires_explicit_acknowledgment": true
+    }
+  ]
+}

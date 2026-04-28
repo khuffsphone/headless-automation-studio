@@ -21,6 +21,15 @@ interface BriefValidationError {
   message: string;
 }
 
+interface FreezeListHit {
+  item_id: string;
+  item_label: string;
+  matched_on: string;
+  reason: string;
+  requires_explicit_acknowledgment: boolean;
+  acknowledged: boolean;
+}
+
 interface DecisionLogProps {
   decisions: Decision[];
   onDecisionExported?: (updated: Decision) => void;
@@ -39,6 +48,8 @@ interface ExportState {
   bridgeFile: string | null;
   enforcementErrors: BriefValidationError[];
   enforcementWarnings: string[];
+  freezeListHits: FreezeListHit[];
+  freezeListConfigError: string | null;
 }
 
 function DecisionCard({
@@ -54,6 +65,8 @@ function DecisionCard({
     bridgeFile: null,
     enforcementErrors: [],
     enforcementWarnings: [],
+    freezeListHits: [],
+    freezeListConfigError: null,
   });
 
   const eligible = isExportEligible(decision);
@@ -62,7 +75,11 @@ function DecisionCard({
     decision.execution_status === "in_progress" || exportState.bridgeFile !== null;
 
   async function handleExport() {
-    setExportState({ exporting: true, error: null, bridgeFile: null, enforcementErrors: [], enforcementWarnings: [] });
+    setExportState({
+      exporting: true, error: null, bridgeFile: null,
+      enforcementErrors: [], enforcementWarnings: [],
+      freezeListHits: [], freezeListConfigError: null,
+    });
     try {
       const res = await fetch(`/api/decision/${decision.decision_id}/export`, {
         method: "POST",
@@ -74,27 +91,42 @@ function DecisionCard({
         message?: string;
         enforcement_errors?: BriefValidationError[];
         enforcement_warnings?: string[];
+        freeze_list_hits?: FreezeListHit[];
+        detail?: string;
       };
       if (!res.ok) {
         if (data.enforcement_errors && data.enforcement_errors.length > 0) {
-          // Brief enforcement failed — surface per-section errors
           setExportState({
-            exporting: false,
-            error: data.message ?? "Brief enforcement failed.",
-            bridgeFile: null,
-            enforcementErrors: data.enforcement_errors,
+            exporting: false, error: data.message ?? "Brief enforcement failed.",
+            bridgeFile: null, enforcementErrors: data.enforcement_errors,
             enforcementWarnings: data.enforcement_warnings ?? [],
+            freezeListHits: [], freezeListConfigError: null,
+          });
+          return;
+        }
+        if (data.freeze_list_hits && data.freeze_list_hits.length > 0) {
+          setExportState({
+            exporting: false, error: data.message ?? "Freeze list blocked export.",
+            bridgeFile: null, enforcementErrors: [], enforcementWarnings: [],
+            freezeListHits: data.freeze_list_hits, freezeListConfigError: null,
+          });
+          return;
+        }
+        if ((data as Record<string, unknown>)["error"] === "freeze_list_config_error") {
+          setExportState({
+            exporting: false, error: data.message ?? "Freeze list config error.",
+            bridgeFile: null, enforcementErrors: [], enforcementWarnings: [],
+            freezeListHits: [], freezeListConfigError: data.detail ?? data.message ?? "Config error.",
           });
           return;
         }
         throw new Error(data.message ?? `HTTP ${res.status}`);
       }
       setExportState({
-        exporting: false,
-        error: null,
+        exporting: false, error: null,
         bridgeFile: data.bridge_file ?? "exported",
-        enforcementErrors: [],
-        enforcementWarnings: data.enforcement_warnings ?? [],
+        enforcementErrors: [], enforcementWarnings: data.enforcement_warnings ?? [],
+        freezeListHits: [], freezeListConfigError: null,
       });
       if (data.decision && onExported) {
         onExported(data.decision);
@@ -103,9 +135,8 @@ function DecisionCard({
       setExportState({
         exporting: false,
         error: e instanceof Error ? e.message : "Export failed.",
-        bridgeFile: null,
-        enforcementErrors: [],
-        enforcementWarnings: [],
+        bridgeFile: null, enforcementErrors: [], enforcementWarnings: [],
+        freezeListHits: [], freezeListConfigError: null,
       });
     }
   }
@@ -188,12 +219,15 @@ function DecisionCard({
             </button>
           ) : null}
 
-          {exportState.error && exportState.enforcementErrors.length === 0 && (
+          {exportState.error &&
+            exportState.enforcementErrors.length === 0 &&
+            exportState.freezeListHits.length === 0 &&
+            !exportState.freezeListConfigError && (
             <span className="text-[11px] text-rose-700">{exportState.error}</span>
           )}
         </div>
 
-        {/* Brief enforcement errors — shown per-section */}
+        {/* Brief enforcement errors */}
         {exportState.enforcementErrors.length > 0 && (
           <div className="rounded border border-rose-300 bg-rose-50 p-2">
             <p className="mb-1 text-[11px] font-semibold text-rose-800">
@@ -216,6 +250,38 @@ function DecisionCard({
                 ))}
               </ul>
             )}
+          </div>
+        )}
+
+        {/* Freeze-list blocked hits */}
+        {exportState.freezeListHits.length > 0 && (
+          <div className="rounded border border-orange-300 bg-orange-50 p-2">
+            <p className="mb-1 text-[11px] font-semibold text-orange-900">
+              🔒 Export blocked — protected contract(s) referenced without acknowledgment:
+            </p>
+            <ul className="space-y-1.5">
+              {exportState.freezeListHits.map((h) => (
+                <li key={h.item_id} className="text-[11px] text-orange-900">
+                  <span className="font-semibold">[{h.item_id}]</span> {h.item_label}
+                  <div className="mt-0.5 text-[10px] text-orange-700">
+                    Matched on: {h.matched_on} — {h.reason}
+                  </div>
+                  <div className="mt-0.5 text-[10px] text-orange-600">
+                    💡 Add to <code>operator_rationale</code>:{" "}
+                    <em>&quot;freeze-list override approved for {h.item_id}&quot;</em>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Freeze-list config error */}
+        {exportState.freezeListConfigError && (
+          <div className="rounded border border-orange-300 bg-orange-50 p-2">
+            <p className="text-[11px] font-semibold text-orange-900">
+              🔒 Freeze-list config error: {exportState.freezeListConfigError}
+            </p>
           </div>
         )}
       </div>

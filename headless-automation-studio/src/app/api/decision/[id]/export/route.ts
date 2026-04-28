@@ -26,6 +26,8 @@ import {
   updateDecisionStatus,
   writeAgBridgeFile,
   BriefEnforcementError,
+  FreezeListError,
+  FreezeListConfigError,
 } from "@/lib/storage";
 
 export async function POST(
@@ -82,9 +84,10 @@ export async function POST(
   }
 
   // Write immutable bridge file.
-  // Brief enforcement runs inside writeAgBridgeFile before any I/O.
-  // BriefEnforcementError → 422 with structured section errors.
-  // Any other error → 500.
+  // Order of gates inside writeAgBridgeFile:
+  //   1. Brief enforcer (HAS-006) → BriefEnforcementError → 422
+  //   2. Freeze-list check (HAS-008) → FreezeListConfigError | FreezeListError → 422
+  // No file is written on any gate failure.
   let bridgeFilePath: string;
   try {
     bridgeFilePath = writeAgBridgeFile(decision);
@@ -96,6 +99,27 @@ export async function POST(
           message: err.message,
           enforcement_errors: err.errors,
           enforcement_warnings: err.warnings,
+        },
+        { status: 422 },
+      );
+    }
+    if (err instanceof FreezeListConfigError) {
+      return NextResponse.json(
+        {
+          error: "freeze_list_config_error",
+          message: err.message,
+          detail: err.detail,
+        },
+        { status: 422 },
+      );
+    }
+    if (err instanceof FreezeListError) {
+      return NextResponse.json(
+        {
+          error: "freeze_list_blocked",
+          message: err.message,
+          freeze_list_hits: err.blocking_hits,
+          all_hits: err.all_hits,
         },
         { status: 422 },
       );

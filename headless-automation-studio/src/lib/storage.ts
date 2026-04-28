@@ -21,6 +21,17 @@ import type {
   Thread,
 } from "@/types/schema";
 import { enforceExecutionBrief, type BriefValidationError } from "@/lib/briefEnforcer";
+import {
+  loadFreezeList,
+  checkProposalAgainstFreezeList,
+  buildFreezeListSection,
+  FreezeListError,
+  FreezeListConfigError,
+  type FreezeListHit,
+} from "@/lib/freezeList";
+
+// Re-export so the export route only needs to import from "@/lib/storage"
+export { FreezeListError, FreezeListConfigError, type FreezeListHit } from "@/lib/freezeList";
 
 /**
  * Structured error thrown by writeAgBridgeFile when the brief enforcer
@@ -178,6 +189,26 @@ export function writeAgBridgeFile(decision: Decision): string {
     );
   }
 
+  // -------------------------------------------------------------------------
+  // Freeze-list gate — runs after brief enforcer, before any file is written.
+  // Missing freeze-list.json is non-fatal (freezeList = null).
+  // Malformed config throws FreezeListConfigError (caller returns 422).
+  // Unacknowledged blocking hits throw FreezeListError (caller returns 422).
+  // -------------------------------------------------------------------------
+  const freezeList = loadFreezeList();
+  let freezeListHits: FreezeListHit[] = [];
+  if (freezeList !== null) {
+    const freezeCheck = checkProposalAgainstFreezeList(
+      decision.accepted_proposal,
+      decision.operator_rationale,
+      freezeList,
+    );
+    if (!freezeCheck.ok) {
+      throw new FreezeListError(freezeCheck.blocking_hits, freezeCheck.all_hits);
+    }
+    freezeListHits = freezeCheck.hits;
+  }
+
   if (!fs.existsSync(AG_TASKS_DIR)) {
     fs.mkdirSync(AG_TASKS_DIR, { recursive: true });
   }
@@ -242,6 +273,12 @@ export function writeAgBridgeFile(decision: Decision): string {
     for (const w of enforcerResult.warnings) lines.push(`> ⚠️ ${w}`);
     lines.push("");
   }
+
+  // -------------------------------------------------------------------------
+  // Freeze-list section — always included so Antigravity knows what is
+  // protected. Injected here whether or not any items were matched.
+  // -------------------------------------------------------------------------
+  lines.push(...buildFreezeListSection(freezeList, freezeListHits));
 
   if (decision.operator_rationale) {
     lines.push("## Operator rationale", "", decision.operator_rationale, "");
