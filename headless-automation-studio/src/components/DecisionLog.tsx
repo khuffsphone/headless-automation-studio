@@ -16,6 +16,11 @@
 import { useState } from "react";
 import type { Decision } from "@/types/schema";
 
+interface BriefValidationError {
+  section: string;
+  message: string;
+}
+
 interface DecisionLogProps {
   decisions: Decision[];
   onDecisionExported?: (updated: Decision) => void;
@@ -32,6 +37,8 @@ interface ExportState {
   exporting: boolean;
   error: string | null;
   bridgeFile: string | null;
+  enforcementErrors: BriefValidationError[];
+  enforcementWarnings: string[];
 }
 
 function DecisionCard({
@@ -45,6 +52,8 @@ function DecisionCard({
     exporting: false,
     error: null,
     bridgeFile: null,
+    enforcementErrors: [],
+    enforcementWarnings: [],
   });
 
   const eligible = isExportEligible(decision);
@@ -53,7 +62,7 @@ function DecisionCard({
     decision.execution_status === "in_progress" || exportState.bridgeFile !== null;
 
   async function handleExport() {
-    setExportState({ exporting: true, error: null, bridgeFile: null });
+    setExportState({ exporting: true, error: null, bridgeFile: null, enforcementErrors: [], enforcementWarnings: [] });
     try {
       const res = await fetch(`/api/decision/${decision.decision_id}/export`, {
         method: "POST",
@@ -63,14 +72,29 @@ function DecisionCard({
         bridge_file?: string;
         decision?: Decision;
         message?: string;
+        enforcement_errors?: BriefValidationError[];
+        enforcement_warnings?: string[];
       };
       if (!res.ok) {
+        if (data.enforcement_errors && data.enforcement_errors.length > 0) {
+          // Brief enforcement failed — surface per-section errors
+          setExportState({
+            exporting: false,
+            error: data.message ?? "Brief enforcement failed.",
+            bridgeFile: null,
+            enforcementErrors: data.enforcement_errors,
+            enforcementWarnings: data.enforcement_warnings ?? [],
+          });
+          return;
+        }
         throw new Error(data.message ?? `HTTP ${res.status}`);
       }
       setExportState({
         exporting: false,
         error: null,
         bridgeFile: data.bridge_file ?? "exported",
+        enforcementErrors: [],
+        enforcementWarnings: data.enforcement_warnings ?? [],
       });
       if (data.decision && onExported) {
         onExported(data.decision);
@@ -80,6 +104,8 @@ function DecisionCard({
         exporting: false,
         error: e instanceof Error ? e.message : "Export failed.",
         bridgeFile: null,
+        enforcementErrors: [],
+        enforcementWarnings: [],
       });
     }
   }
@@ -137,32 +163,60 @@ function DecisionCard({
       </div>
 
       {/* Export row */}
-      <div className="mt-2 flex items-center gap-2">
-        {alreadyExported ? (
-          <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-800">
-            ✓ Exported → in_progress
-            {exportState.bridgeFile && (
-              <span
-                className="ml-1 max-w-[220px] truncate font-mono text-[9px] text-blue-600"
-                title={exportState.bridgeFile}
-              >
-                {exportState.bridgeFile.split(/[\\/]/).slice(-1)[0]}
-              </span>
-            )}
-          </span>
-        ) : eligible ? (
-          <button
-            id={`export-btn-${decision.decision_id}`}
-            onClick={() => void handleExport()}
-            disabled={exportState.exporting}
-            className="rounded bg-violet-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {exportState.exporting ? "Exporting…" : "Export to Antigravity"}
-          </button>
-        ) : null}
+      <div className="mt-2 flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          {alreadyExported ? (
+            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-800">
+              ✓ Exported → in_progress
+              {exportState.bridgeFile && (
+                <span
+                  className="ml-1 max-w-[220px] truncate font-mono text-[9px] text-blue-600"
+                  title={exportState.bridgeFile}
+                >
+                  {exportState.bridgeFile.split(/[\\/]/).slice(-1)[0]}
+                </span>
+              )}
+            </span>
+          ) : eligible ? (
+            <button
+              id={`export-btn-${decision.decision_id}`}
+              onClick={() => void handleExport()}
+              disabled={exportState.exporting}
+              className="rounded bg-violet-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {exportState.exporting ? "Exporting…" : "Export to Antigravity"}
+            </button>
+          ) : null}
 
-        {exportState.error && (
-          <span className="text-[11px] text-rose-700">{exportState.error}</span>
+          {exportState.error && exportState.enforcementErrors.length === 0 && (
+            <span className="text-[11px] text-rose-700">{exportState.error}</span>
+          )}
+        </div>
+
+        {/* Brief enforcement errors — shown per-section */}
+        {exportState.enforcementErrors.length > 0 && (
+          <div className="rounded border border-rose-300 bg-rose-50 p-2">
+            <p className="mb-1 text-[11px] font-semibold text-rose-800">
+              ⛔ Export blocked — execution brief validation failed:
+            </p>
+            <ul className="space-y-1">
+              {exportState.enforcementErrors.map((e) => (
+                <li key={e.section} className="text-[11px] text-rose-700">
+                  <span className="font-semibold">[{e.section}]</span>{" "}
+                  {e.message}
+                </li>
+              ))}
+            </ul>
+            {exportState.enforcementWarnings.length > 0 && (
+              <ul className="mt-1 space-y-0.5">
+                {exportState.enforcementWarnings.map((w, i) => (
+                  <li key={i} className="text-[10px] text-amber-700">
+                    ⚠️ {w}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         )}
       </div>
     </li>

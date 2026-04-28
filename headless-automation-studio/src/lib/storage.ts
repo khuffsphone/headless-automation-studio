@@ -20,6 +20,27 @@ import type {
   ProjectContext,
   Thread,
 } from "@/types/schema";
+import { enforceExecutionBrief, type BriefValidationError } from "@/lib/briefEnforcer";
+
+/**
+ * Structured error thrown by writeAgBridgeFile when the brief enforcer
+ * rejects a decision. The caller (export route) catches this and surfaces
+ * the errors array in the API response rather than a generic 500 message.
+ */
+export class BriefEnforcementError extends Error {
+  readonly errors: BriefValidationError[];
+  readonly warnings: string[];
+  constructor(errors: BriefValidationError[], warnings: string[]) {
+    super(
+      `Execution brief failed validation (${errors.length} error${
+        errors.length === 1 ? "" : "s"
+      }): ${errors.map((e) => e.section).join(", ")}`,
+    );
+    this.name = "BriefEnforcementError";
+    this.errors = errors;
+    this.warnings = warnings;
+  }
+}
 
 const STORAGE_ROOT = path.resolve(process.cwd(), "has-data");
 const EXPORTS_DIR = path.join(STORAGE_ROOT, "exports");
@@ -143,6 +164,20 @@ export function updateDecisionStatus(
  */
 export function writeAgBridgeFile(decision: Decision): string {
   assertWithinStorage(AG_TASKS_DIR);
+
+  // -------------------------------------------------------------------------
+  // Brief enforcement gate — runs BEFORE any file is written.
+  // If validation fails, throw BriefEnforcementError with structured errors.
+  // No partial file is written on failure.
+  // -------------------------------------------------------------------------
+  const enforcerResult = enforceExecutionBrief(decision);
+  if (!enforcerResult.valid) {
+    throw new BriefEnforcementError(
+      enforcerResult.errors,
+      enforcerResult.warnings,
+    );
+  }
+
   if (!fs.existsSync(AG_TASKS_DIR)) {
     fs.mkdirSync(AG_TASKS_DIR, { recursive: true });
   }
@@ -165,7 +200,7 @@ export function writeAgBridgeFile(decision: Decision): string {
     `**Exported at:** ${new Date().toISOString()}`,
     "",
     // -----------------------------------------------------------------------
-    // Execution gate — included in every exported task file.
+    // Execution gate — mandatory block, injected on every export.
     // Antigravity must present a plan and receive explicit operator approval
     // before taking any write action.
     // -----------------------------------------------------------------------
@@ -190,11 +225,23 @@ export function writeAgBridgeFile(decision: Decision): string {
     "",
     decision.originating_question,
     "",
-    "## Accepted proposal",
+    // -----------------------------------------------------------------------
+    // Normalized execution brief — produced by the brief enforcer.
+    // This replaces the raw accepted_proposal with a validated, structured
+    // brief that contains all 10 required sections.
+    // -----------------------------------------------------------------------
+    "## Normalized Execution Brief",
     "",
-    decision.accepted_proposal,
+    enforcerResult.brief,
     "",
   ];
+
+  // Append warnings if any (advisory, non-blocking)
+  if (enforcerResult.warnings.length > 0) {
+    lines.push("## Enforcer Warnings", "");
+    for (const w of enforcerResult.warnings) lines.push(`> ⚠️ ${w}`);
+    lines.push("");
+  }
 
   if (decision.operator_rationale) {
     lines.push("## Operator rationale", "", decision.operator_rationale, "");

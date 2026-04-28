@@ -25,6 +25,7 @@ import {
   regenerateDecisionsMarkdown,
   updateDecisionStatus,
   writeAgBridgeFile,
+  BriefEnforcementError,
 } from "@/lib/storage";
 
 export async function POST(
@@ -80,15 +81,31 @@ export async function POST(
     );
   }
 
-  // Write immutable bridge file
+  // Write immutable bridge file.
+  // Brief enforcement runs inside writeAgBridgeFile before any I/O.
+  // BriefEnforcementError → 422 with structured section errors.
+  // Any other error → 500.
   let bridgeFilePath: string;
   try {
     bridgeFilePath = writeAgBridgeFile(decision);
   } catch (err) {
+    if (err instanceof BriefEnforcementError) {
+      return NextResponse.json(
+        {
+          error: "brief_enforcement_failed",
+          message: err.message,
+          enforcement_errors: err.errors,
+          enforcement_warnings: err.warnings,
+        },
+        { status: 422 },
+      );
+    }
     return NextResponse.json(
       {
         error: "bridge_write_failed",
-        message: `Failed to write bridge file: ${err instanceof Error ? err.message : String(err)}`,
+        message: `Failed to write bridge file: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
       },
       { status: 500 },
     );
