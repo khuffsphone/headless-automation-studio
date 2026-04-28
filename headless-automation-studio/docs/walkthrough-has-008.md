@@ -1,6 +1,6 @@
 # Walkthrough — HAS-008: Freeze List for Protected Contracts
 
-**Commit:** TBD (recorded after push)
+**Commits:** `bbeec49` feat: HAS-008 initial · `0cc4c19` fix: acknowledgment compound patterns · `f951639` docs: walkthrough cleanup
 **Repo:** `headless-automation-studio`
 **Date:** 2026-04-28
 **Status:** Complete

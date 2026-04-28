@@ -1,6 +1,6 @@
 # Walkthrough — HAS-007: Pre-Debate Input Lint
 
-**Commit:** TBD (recorded after push)
+**Commit:** `5861ccc` feat: HAS-007 — pre-debate input lint (7 rules, dual-layer gate)
 **Repo:** `headless-automation-studio`
 **Date:** 2026-04-28
 **Status:** Complete
